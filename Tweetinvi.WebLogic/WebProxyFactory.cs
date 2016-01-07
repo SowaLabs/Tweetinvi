@@ -12,7 +12,7 @@ namespace Tweetinvi.WebLogic
             if (!string.IsNullOrEmpty(proxyURL))
             {
                 var proxyUri = new Uri(proxyURL);
-                var proxy = new WebProxy(string.Format("{0}://{1}:{2}", proxyUri.Scheme, proxyUri.Host, proxyUri.Port));
+                var proxy = new Tweetinvi.WebLogic.Utils.WebProxy(string.Format("{0}://{1}:{2}", proxyUri.Scheme, proxyUri.Host, proxyUri.Port));
 
                 // Check if Uri has user authentication specified
                 if (!string.IsNullOrEmpty(proxyUri.UserInfo))

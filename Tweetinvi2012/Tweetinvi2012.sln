@@ -7,6 +7,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tweetinvi.Core", "..\Tweeti
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tweetinvi.Logic", "..\Tweetinvi.Logic\Tweetinvi.Logic.csproj", "{1C74B83B-4B84-44E2-AFD7-1468BB90306D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tweetinvi.Security", "..\Tweetinvi.Security\Tweetinvi.Security.csproj", "{9CA25A79-3ED2-42EB-A497-1BE3F8A2B298}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tweetinvi.WebLogic", "..\Tweetinvi.WebLogic\Tweetinvi.WebLogic.csproj", "{059849D4-DFC0-42BC-8B34-0AD2DF3210C7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -25,6 +29,14 @@ Global
 		{1C74B83B-4B84-44E2-AFD7-1468BB90306D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1C74B83B-4B84-44E2-AFD7-1468BB90306D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1C74B83B-4B84-44E2-AFD7-1468BB90306D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9CA25A79-3ED2-42EB-A497-1BE3F8A2B298}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9CA25A79-3ED2-42EB-A497-1BE3F8A2B298}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9CA25A79-3ED2-42EB-A497-1BE3F8A2B298}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9CA25A79-3ED2-42EB-A497-1BE3F8A2B298}.Release|Any CPU.Build.0 = Release|Any CPU
+		{059849D4-DFC0-42BC-8B34-0AD2DF3210C7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{059849D4-DFC0-42BC-8B34-0AD2DF3210C7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{059849D4-DFC0-42BC-8B34-0AD2DF3210C7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{059849D4-DFC0-42BC-8B34-0AD2DF3210C7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
