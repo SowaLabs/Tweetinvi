@@ -244,7 +244,7 @@ namespace Tweetinvi.WebLogic
             }
 # endif
 
-            var webRequest = WebRequest.CreateHttp(uri.AbsoluteUri);
+            var webRequest = (HttpWebRequest)WebRequest.Create(uri.AbsoluteUri);//WebRequest.CreateHttp(uri.AbsoluteUri);
             webRequest.Method = httpMethod.ToString();
             webRequest.Headers["Authorization"] = header;
 
