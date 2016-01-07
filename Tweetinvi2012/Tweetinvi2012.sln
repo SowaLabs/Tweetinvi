@@ -5,6 +5,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tweetinvi2012", "Tweetinvi2
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tweetinvi.Core", "..\Tweetinvi.Core\Tweetinvi.Core.csproj", "{CD1AE921-D88A-4145-87B6-B82F276872F8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tweetinvi.Logic", "..\Tweetinvi.Logic\Tweetinvi.Logic.csproj", "{1C74B83B-4B84-44E2-AFD7-1468BB90306D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -19,6 +21,10 @@ Global
 		{CD1AE921-D88A-4145-87B6-B82F276872F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CD1AE921-D88A-4145-87B6-B82F276872F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CD1AE921-D88A-4145-87B6-B82F276872F8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1C74B83B-4B84-44E2-AFD7-1468BB90306D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1C74B83B-4B84-44E2-AFD7-1468BB90306D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1C74B83B-4B84-44E2-AFD7-1468BB90306D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1C74B83B-4B84-44E2-AFD7-1468BB90306D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
