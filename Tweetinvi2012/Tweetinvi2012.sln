@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tweetinvi.Controllers", "..
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tweetinvi.Streams", "..\Tweetinvi.Streams\Tweetinvi.Streams.csproj", "{1EE99D68-D7CB-403B-830E-AEE8B87705FA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tweetinvi.Credentials", "..\Tweetinvi.Credentials\Tweetinvi.Credentials.csproj", "{612CDDA5-C4CE-421F-BF86-C542316F12AB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -55,6 +57,10 @@ Global
 		{1EE99D68-D7CB-403B-830E-AEE8B87705FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1EE99D68-D7CB-403B-830E-AEE8B87705FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1EE99D68-D7CB-403B-830E-AEE8B87705FA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{612CDDA5-C4CE-421F-BF86-C542316F12AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{612CDDA5-C4CE-421F-BF86-C542316F12AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{612CDDA5-C4CE-421F-BF86-C542316F12AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{612CDDA5-C4CE-421F-BF86-C542316F12AB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
