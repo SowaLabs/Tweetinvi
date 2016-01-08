@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tweetinvi.WebLogic", "..\Tw
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tweetinvi.Factories", "..\Tweetinvi.Factories\Tweetinvi.Factories.csproj", "{D39434BF-9482-48F0-8717-C02C420C7E4F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tweetinvi.Controllers", "..\Tweetinvi.Controllers\Tweetinvi.Controllers.csproj", "{6048BD01-3CEF-4668-80D8-615914CC85A2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -43,6 +45,10 @@ Global
 		{D39434BF-9482-48F0-8717-C02C420C7E4F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D39434BF-9482-48F0-8717-C02C420C7E4F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D39434BF-9482-48F0-8717-C02C420C7E4F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6048BD01-3CEF-4668-80D8-615914CC85A2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6048BD01-3CEF-4668-80D8-615914CC85A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6048BD01-3CEF-4668-80D8-615914CC85A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6048BD01-3CEF-4668-80D8-615914CC85A2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
