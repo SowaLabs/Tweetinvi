@@ -7,8 +7,9 @@
 */obj
 */bin
 *.exe
+*.suo
 /.vs
-/packages
+packages/
 /Developer Tools/temp*
 /Developer Tools/TweetinviAPI/lib
 /Examplinvi.Web/App_Data
