@@ -2,6 +2,8 @@
 using System.Linq;
 using Tweetinvi;
 using Tweetinvi.Core.Credentials;
+using Tweetinvi.Core.Parameters;
+using Tweetinvi.Core.Enum;
 
 namespace Tweetinvi2012
 {
@@ -16,7 +18,8 @@ namespace Tweetinvi2012
                 "WorkerSecret"
             );
             Auth.ExecuteOperationWithCredentials(credentials, () => {
-                var tweets = Search.SearchTweets("barack obama");
+                TweetSearchParameters searchParams = new TweetSearchParameters("barack obama") { SearchType = SearchResultType.Recent };
+                var tweets = Search.SearchTweets(searchParams);
                 foreach (var tweet in tweets)
                 {
                     Console.WriteLine(tweet.Text);
