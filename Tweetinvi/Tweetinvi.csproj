@@ -48,6 +48,7 @@
     <Compile Include="HelpAsync.cs" />
     <Compile Include="Injectinvi\AutofacContainer.cs" />
     <Compile Include="Injectinvi\AutofacThreadContainer.cs" />
+    <Compile Include="Injectinvi\OverridableContainer.cs" />
     <Compile Include="Json\AccountJson.cs" />
     <Compile Include="Json\FriendshipJson.cs" />
     <Compile Include="Json\GeoJson.cs" />
@@ -123,7 +124,8 @@
       <Name>Tweetinvi.WebLogic</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
+  <ItemGroup />
+    <ItemGroup>
     <Reference Include="Autofac, Version=3.5.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
       <HintPath>..\Tweetinvi2012\packages\Autofac.3.5.2\lib\net40\Autofac.dll</HintPath>
       <Private>True</Private>
