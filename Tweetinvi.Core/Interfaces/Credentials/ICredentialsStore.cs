@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using Tweetinvi.Core.Credentials;
+using Tweetinvi.Core.Authentication;
 
 namespace Tweetinvi.Core.Interfaces.Credentials
 {
     public interface ICredentialsStore
     {
-        Dictionary<Guid, IConsumerCredentials> CallbackCredentialsStore { get; }
+        Dictionary<Guid, IAuthenticationContext> CallbackAuthenticationContextStore { get; }
 
-        bool TryGetValue(Guid identifier, out IConsumerCredentials creds);
-        bool TryGetValue(string identifier, out IConsumerCredentials creds);
+        bool TryGetValue(Guid identifier, out IAuthenticationContext creds);
+        bool TryGetValue(string identifier, out IAuthenticationContext creds);
     }
 }

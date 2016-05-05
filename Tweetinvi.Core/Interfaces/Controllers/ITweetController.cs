@@ -2,7 +2,6 @@
 using Tweetinvi.Core.Interfaces.DTO;
 using Tweetinvi.Core.Interfaces.Models;
 using Tweetinvi.Core.Parameters;
-using Tweetinvi.Core.Parameters.QueryParameters;
 
 namespace Tweetinvi.Core.Interfaces.Controllers
 {
@@ -31,11 +30,18 @@ namespace Tweetinvi.Core.Interfaces.Controllers
         ITweet PublishRetweet(ITweet tweetToPublish);
         ITweet PublishRetweet(ITweetDTO tweetToPublish);
         ITweet PublishRetweet(long tweetId);
+        
+        // Publish UnRetweet
+        ITweet UnRetweet(ITweetIdentifier tweetToPublish);
+        ITweet UnRetweet(long tweetId);
 
         // Get Retweets
-        IEnumerable<ITweet> GetRetweets(ITweet tweet);
-        IEnumerable<ITweet> GetRetweets(ITweetDTO tweetDTO);
-        IEnumerable<ITweet> GetRetweets(long tweetId);
+        IEnumerable<ITweet> GetRetweets(ITweetIdentifier tweet, int maxRetweetsToRetrieve = 100);
+        IEnumerable<ITweet> GetRetweets(long tweetId, int maxRetweetsToRetrieve = 100);
+
+        // Get Retweeters
+        IEnumerable<long> GetRetweetersIds(ITweetIdentifier tweet, int maxRetweetersToRetrieve = 100);
+        IEnumerable<long> GetRetweetersIds(long tweetId, int maxRetweetersToRetrieve = 100);
 
         // Destroy Tweet
         bool DestroyTweet(ITweet tweet);

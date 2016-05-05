@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Tweetinvi.Core.Interfaces.Controllers;
 using Tweetinvi.Core.Interfaces.Models;
 
@@ -49,6 +50,30 @@ namespace Tweetinvi
         public static IPlaceTrends GetTrendsAt(IWoeIdLocation woeIdLocation)
         {
             return TrendsController.GetPlaceTrendsAt(woeIdLocation);
+        }
+
+        /// <summary>
+        /// Returns the locations that Twitter has trending topic information for.
+        /// </summary>
+        public static IEnumerable<ITrendLocation> GetAvailableTrendLocations()
+        {
+            return TrendsController.GetAvailableTrendLocations();
+        }
+
+        /// <summary>
+        /// Returns the locations that Twitter has trending topic information for, closest to a specified location.
+        /// </summary>
+        public static IEnumerable<ITrendLocation> GetClosestTrendLocations(double longitude, double latitude)
+        {
+            return TrendsController.GetClosestTrendLocations(longitude, latitude);
+        }
+
+        /// <summary>
+        /// Returns the locations that Twitter has trending topic information for, closest to a specified location.
+        /// </summary>
+        public static IEnumerable<ITrendLocation> GetClosestTrendLocations(ICoordinates coordinates)
+        {
+            return TrendsController.GetClosestTrendLocations(coordinates);
         }
     }
 }

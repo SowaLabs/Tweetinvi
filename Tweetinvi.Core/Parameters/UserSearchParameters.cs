@@ -6,12 +6,12 @@
     public interface IUserSearchParameters : ICustomRequestParameters
     {
         /// <summary>
-        /// Query to search for people
+        /// Query to search for people.
         /// </summary>
         string SearchQuery { get; set; }
 
         /// <summary>
-        /// Page of result to retrieve
+        /// Search result page to retrieve.
         /// </summary>
         int Page { get; set; }
 
@@ -22,11 +22,14 @@
         int MaximumNumberOfResults { get; set; }
 
         /// <summary>
-        /// User Entities properties will be set
+        /// Retrieve the user entities.
         /// </summary>
         bool IncludeEntities { get; set; }
     }
 
+    /// <summary>
+    /// https://dev.twitter.com/rest/reference/get/users/search
+    /// </summary>
     public class UserSearchParameters : CustomRequestParameters, IUserSearchParameters
     {
         public UserSearchParameters(string query)

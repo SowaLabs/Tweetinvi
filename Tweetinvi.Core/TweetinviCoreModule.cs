@@ -5,6 +5,7 @@ using Tweetinvi.Core.Injectinvi;
 using Tweetinvi.Core.Interfaces.Models;
 using Tweetinvi.Core.Parameters;
 using Tweetinvi.Core.Parameters.QueryParameters;
+using Tweetinvi.Core.Web;
 
 namespace Tweetinvi.Core
 {
@@ -56,6 +57,9 @@ namespace Tweetinvi.Core
             _container.RegisterType<ITwitterListUpdateParameters, TwitterListUpdateParameters>();
             _container.RegisterType<IGetTweetsFromListParameters, GetTweetsFromListParameters>();
 
+            // Account
+            _container.RegisterType<IAccountUpdateProfileBannerParameters, AccountUpdateProfileBannerParameters>();
+
             // Search
             _container.RegisterType<ITweetSearchParameters, TweetSearchParameters>();
             _container.RegisterType<IUserSearchParameters, UserSearchParameters>();
@@ -63,6 +67,7 @@ namespace Tweetinvi.Core
             // Tweet
             _container.RegisterType<IPublishTweetParameters, PublishTweetParameters>();
             _container.RegisterType<IPublishTweetOptionalParameters, PublishTweetOptionalParameters>();
+            _container.RegisterType<IGetUserFavoritesParameters, GetUserFavoritesParameters>();
 
             // Account
             _container.RegisterType<IAccountSettingsRequestParameters, AccountSettingsRequestParameters>();
@@ -76,7 +81,11 @@ namespace Tweetinvi.Core
             // Message
             _container.RegisterType<IMessagesReceivedParameters, MessagesReceivedParameters>();
             _container.RegisterType<IMessagesSentParameters, MessagesSentParameters>();
-            _container.RegisterType<IMessagePublishParameters, MessagePublishParameters>();
+            _container.RegisterType<IPublishMessageParameters, PublishMessageParameters>();
+
+            // Upload
+            _container.RegisterType<IChunkUploadInitParameters, ChunkUploadInitParameters>();
+            _container.RegisterType<IChunkUploadAppendParameters, ChunkUploadAppendParameters>();
         }
     }
 }

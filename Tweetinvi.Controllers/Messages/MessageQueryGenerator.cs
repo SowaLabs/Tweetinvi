@@ -21,7 +21,7 @@ namespace Tweetinvi.Controllers.Messages
         string GetLatestMessagesSentQuery(IMessagesSentParameters queryParameters);
 
         // Publish Message
-        string GetPublishMessageQuery(IMessagePublishParameters parameters);
+        string GetPublishMessageQuery(IPublishMessageParameters parameters);
 
         // Detroy Message
         string GetDestroyMessageQuery(IMessageDTO messageDTO);
@@ -100,7 +100,7 @@ namespace Tweetinvi.Controllers.Messages
         }
 
         // Publish Message
-        public string GetPublishMessageQuery(IMessagePublishParameters parameters)
+        public string GetPublishMessageQuery(IPublishMessageParameters parameters)
         {
             var messageText = parameters.Text;
             var recipient = parameters.Recipient;
@@ -110,8 +110,13 @@ namespace Tweetinvi.Controllers.Messages
                 return null;
             }
 
-            string identifierParameter = _userQueryParameterGenerator.GenerateIdOrScreenNameParameter(recipient);
-            return GetPublishMessageFormattedQuery(messageText, identifierParameter);
+            var identifierParameter = _userQueryParameterGenerator.GenerateIdOrScreenNameParameter(recipient);
+
+            var query = GetPublishMessageFormattedQuery(messageText, identifierParameter);
+
+            query += _queryParameterGenerator.GenerateAdditionalRequestParameters(parameters.FormattedCustomQueryParameters);
+
+            return query;
         }
 
         private string GetPublishMessageFormattedQuery(string message, string userIdentifier)
@@ -137,7 +142,7 @@ namespace Tweetinvi.Controllers.Messages
                 return null;
             }
 
-            return String.Format(Resources.Message_DestroyMessage, messageId);
+            return string.Format(Resources.Message_DestroyMessage, messageId);
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿using System;
 using Tweetinvi.Core;
-using Tweetinvi.Core.Credentials;
+using Tweetinvi.Core.Authentication;
 using Tweetinvi.Core.Enum;
 using Tweetinvi.Core.Injectinvi;
 using Tweetinvi.Core.Interfaces.Credentials;
@@ -26,13 +26,14 @@ namespace Tweetinvi.Factories
 
         public ITwitterQuery Create(string queryURL, HttpMethod httpMethod, bool withThreadCredentials = false)
         {
-            var queryURLParameter = new ConstructorNamedParameter("queryURL", queryURL);
+            var uri = new Uri(queryURL);
+            var queryURLParameter = new ConstructorNamedParameter("queryURL", uri.AbsoluteUri);
             var httpMethodParameter = new ConstructorNamedParameter("httpMethod", httpMethod);
 
             var twitterQuery = _twitterQueryFactory.Create(queryURLParameter, httpMethodParameter);
 
             twitterQuery.Proxy = _tweetinviSettingsAccessor.ProxyURL;
-            twitterQuery.Timeout = TimeSpan.FromMilliseconds(_tweetinviSettingsAccessor.WebRequestTimeout);
+            twitterQuery.Timeout = TimeSpan.FromMilliseconds(_tweetinviSettingsAccessor.HttpRequestTimeout);
 
             if (withThreadCredentials)
             {

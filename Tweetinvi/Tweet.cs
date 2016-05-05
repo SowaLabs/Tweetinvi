@@ -27,7 +27,7 @@ namespace Tweetinvi
                 return _tweetFactory;
             }
         }
-        
+
         [ThreadStatic]
         private static ITweetController _tweetController;
         public static ITweetController TweetController
@@ -55,7 +55,7 @@ namespace Tweetinvi
         }
 
         #region Tweet Factory
-        
+
         public static ITweet GetTweet(long tweetId)
         {
             return TweetFactory.GetTweet(tweetId);
@@ -194,12 +194,30 @@ namespace Tweetinvi
             return TweetController.PublishRetweet(tweetId);
         }
 
+        // UnRetweet
+
+        /// <summary>
+        /// Publish a unretweet tweet
+        /// </summary>
+        public static bool UnRetweet(ITweetIdentifier tweet)
+        {
+            return TweetController.UnRetweet(tweet) != null;
+        }
+
+        /// <summary>
+        /// Publish a unretweet tweet
+        /// </summary>
+        public static bool UnRetweet(long tweetId)
+        {
+            return TweetController.UnRetweet(tweetId) != null;
+        }
+
         // Get Retweet
 
         /// <summary>
         /// Get the retweets of a specific tweet
         /// </summary>
-        public static IEnumerable<ITweet> GetRetweets(ITweet tweet)
+        public static IEnumerable<ITweet> GetRetweets(ITweetIdentifier tweet)
         {
             return TweetController.GetRetweets(tweet);
         }
@@ -210,6 +228,24 @@ namespace Tweetinvi
         public static IEnumerable<ITweet> GetRetweets(long tweetId)
         {
             return TweetController.GetRetweets(tweetId);
+        }
+
+        // Get Retweeters Ids
+
+        /// <summary>
+        /// Get the retweeter Ids who tweeted a specific tweet
+        /// </summary>
+        public static IEnumerable<long> GetRetweetersIds(long tweetId, int maxRetweetersToRetrieve = 100)
+        {
+            return TweetController.GetRetweetersIds(tweetId, maxRetweetersToRetrieve);
+        }
+
+        /// <summary>
+        /// Get the retweeter Ids who tweeted a specific tweet
+        /// </summary>
+        public static IEnumerable<long> GetRetweetersIds(ITweetIdentifier tweetIdentifier, int maxRetweetersToRetrieve = 100)
+        {
+            return TweetController.GetRetweetersIds(tweetIdentifier, maxRetweetersToRetrieve);
         }
 
         // Destroy Tweet
@@ -247,7 +283,7 @@ namespace Tweetinvi
         {
             return TweetController.FavoriteTweet(tweetId);
         }
-        
+
         // UnFavorite Tweet
 
         /// <summary>

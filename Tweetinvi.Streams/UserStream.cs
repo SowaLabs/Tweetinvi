@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
@@ -34,7 +33,7 @@ namespace Tweetinvi.Streams
         private readonly ITwitterQueryFactory _twitterQueryFactory;
         private readonly ISingleAggregateExceptionThrower _singleAggregateExceptionThrower;
 
-        private ILoggedUser _loggedUser;
+        private IAuthenticatedUser _authenticatedUser;
         private HashSet<long> _friendIds;
         private readonly Dictionary<string, Action<JObject>> _events;
 
@@ -111,16 +110,16 @@ namespace Tweetinvi.Streams
 
         public void StartStream()
         {
-            Action startStreamAction = () => _synchronousInvoker.ExecuteSynchronously(StartStreamAsync());
+            Action startStreamAction = () => _synchronousInvoker.ExecuteSynchronously(() => StartStreamAsync());
             _singleAggregateExceptionThrower.ExecuteActionAndThrowJustOneExceptionIfExist(startStreamAction);
         }
 
         public async Task StartStreamAsync()
         {
-            _loggedUser = await _taskFactory.ExecuteTaskAsync(() => _userFactory.GetLoggedUser());
-            if (_loggedUser == null)
+            _authenticatedUser = await _taskFactory.ExecuteTaskAsync(() => _userFactory.GetAuthenticatedUser(Credentials));
+            if (_authenticatedUser == null)
             {
-                StopStream(new WebException("Could not receive information related with currently logged user."));
+                StopStream(new UserStreamFailedToInitialize("Could not receive information related with currently authenticated user."));
                 return;
             }
 
@@ -216,16 +215,16 @@ namespace Tweetinvi.Streams
         public event EventHandler<ListEventArgs> ListUpdated;
         public event EventHandler<ListEventArgs> ListDestroyed;
 
-        public event EventHandler<ListUserUpdatedEventArgs> LoggedUserAddedMemberToList;
-        public event EventHandler<ListUserUpdatedEventArgs> LoggedUserAddedToListBy;
+        public event EventHandler<ListUserUpdatedEventArgs> AuthenticatedUserAddedMemberToList;
+        public event EventHandler<ListUserUpdatedEventArgs> AuthenticatedUserAddedToListBy;
 
-        public event EventHandler<ListUserUpdatedEventArgs> LoggedUserRemovedMemberFromList;
-        public event EventHandler<ListUserUpdatedEventArgs> LoggedUserRemovedFromListBy;
+        public event EventHandler<ListUserUpdatedEventArgs> AuthenticatedUserRemovedMemberFromList;
+        public event EventHandler<ListUserUpdatedEventArgs> AuthenticatedUserRemovedFromListBy;
 
-        public event EventHandler<ListUserUpdatedEventArgs> LoggedUserSubscribedToListCreatedBy;
+        public event EventHandler<ListUserUpdatedEventArgs> AuthenticatedUserSubscribedToListCreatedBy;
         public event EventHandler<ListUserUpdatedEventArgs> UserSubscribedToListCreatedByMe;
 
-        public event EventHandler<ListUserUpdatedEventArgs> LoggedUserUnsubscribedToListCreatedBy;
+        public event EventHandler<ListUserUpdatedEventArgs> AuthenticatedUserUnsubscribedToListCreatedBy;
         public event EventHandler<ListUserUpdatedEventArgs> UserUnsubscribedToListCreatedByMe;
 
         // Block
@@ -233,7 +232,7 @@ namespace Tweetinvi.Streams
         public event EventHandler<UserBlockedEventArgs> UnBlockedUser;
 
         // Profile Updated
-        public event EventHandler<LoggedUserUpdatedEventArgs> LoggedUserProfileUpdated;
+        public event EventHandler<AuthenticatedUserUpdatedEventArgs> AuthenticatedUserProfileUpdated;
 
         // Warning
         public event EventHandler<WarningTooManyFollowersEventArgs> WarningTooManyFollowersDetected;
@@ -290,7 +289,7 @@ namespace Tweetinvi.Streams
             var tweetReceivedEventArgs = new TweetReceivedEventArgs(tweet);
             this.Raise(TweetCreatedByAnyone, tweetReceivedEventArgs);
 
-            if (tweet.CreatedBy.Equals(_loggedUser))
+            if (tweet.CreatedBy.Equals(_authenticatedUser))
             {
                 this.Raise(TweetCreatedByMe, tweetReceivedEventArgs);
             }
@@ -322,12 +321,12 @@ namespace Tweetinvi.Streams
                 }
 
                 var messageEventArgs = new MessageEventArgs(message);
-                if (message.SenderId == _loggedUser.Id)
+                if (message.SenderId == _authenticatedUser.Id)
                 {
                     this.Raise(MessageSent, messageEventArgs);
                 }
 
-                if (message.RecipientId == _loggedUser.Id)
+                if (message.RecipientId == _authenticatedUser.Id)
                 {
                     this.Raise(MessageReceived, messageEventArgs);
                 }
@@ -344,7 +343,7 @@ namespace Tweetinvi.Streams
             var source = GetSourceUser(userFollowedEvent);
             var target = GetTargetUser(userFollowedEvent);
 
-            if (source.Equals(_loggedUser))
+            if (source.Equals(_authenticatedUser))
             {
                 if (!_friendIds.Contains(target.Id))
                 {
@@ -401,7 +400,7 @@ namespace Tweetinvi.Streams
 
             this.Raise(TweetFavouritedByAnyone, tweetFavouritedEventArgs);
 
-            if (source.Equals(_loggedUser))
+            if (source.Equals(_authenticatedUser))
             {
                 this.Raise(TweetFavouritedByMe, tweetFavouritedEventArgs);
             }
@@ -420,7 +419,7 @@ namespace Tweetinvi.Streams
 
             this.Raise(TweetUnFavouritedByAnyone, tweetFavouritedEventArgs);
 
-            if (source.Equals(_loggedUser))
+            if (source.Equals(_authenticatedUser))
             {
                 this.Raise(TweetUnFavouritedByMe, tweetFavouritedEventArgs);
             }
@@ -455,15 +454,15 @@ namespace Tweetinvi.Streams
             var source = GetSourceUser(listMemberAddedEvent);
             var target = GetTargetUser(listMemberAddedEvent);
 
-            if (source.Equals(_loggedUser))
+            if (source.Equals(_authenticatedUser))
             {
                 var listEventArgs = new ListUserUpdatedEventArgs(list, target);
-                this.Raise(LoggedUserAddedMemberToList, listEventArgs);
+                this.Raise(AuthenticatedUserAddedMemberToList, listEventArgs);
             }
             else
             {
                 var listEventArgs = new ListUserUpdatedEventArgs(list, source);
-                this.Raise(LoggedUserAddedToListBy, listEventArgs);
+                this.Raise(AuthenticatedUserAddedToListBy, listEventArgs);
             }
         }
 
@@ -473,15 +472,15 @@ namespace Tweetinvi.Streams
             var source = GetSourceUser(listMemberAddedEvent);
             var target = GetTargetUser(listMemberAddedEvent);
 
-            if (source.Equals(_loggedUser))
+            if (source.Equals(_authenticatedUser))
             {
                 var listEventArgs = new ListUserUpdatedEventArgs(list, target);
-                this.Raise(LoggedUserRemovedMemberFromList, listEventArgs);
+                this.Raise(AuthenticatedUserRemovedMemberFromList, listEventArgs);
             }
             else
             {
                 var listEventArgs = new ListUserUpdatedEventArgs(list, source);
-                this.Raise(LoggedUserRemovedFromListBy, listEventArgs);
+                this.Raise(AuthenticatedUserRemovedFromListBy, listEventArgs);
             }
         }
 
@@ -491,10 +490,10 @@ namespace Tweetinvi.Streams
             var source = GetSourceUser(listMemberAddedEvent);
             var target = GetTargetUser(listMemberAddedEvent);
 
-            if (source.Equals(_loggedUser))
+            if (source.Equals(_authenticatedUser))
             {
                 var listEventArgs = new ListUserUpdatedEventArgs(list, target);
-                this.Raise(LoggedUserSubscribedToListCreatedBy, listEventArgs);
+                this.Raise(AuthenticatedUserSubscribedToListCreatedBy, listEventArgs);
             }
             else
             {
@@ -509,10 +508,10 @@ namespace Tweetinvi.Streams
             var source = GetSourceUser(listMemberAddedEvent);
             var target = GetTargetUser(listMemberAddedEvent);
 
-            if (source.Equals(_loggedUser))
+            if (source.Equals(_authenticatedUser))
             {
                 var listEventArgs = new ListUserUpdatedEventArgs(list, target);
-                this.Raise(LoggedUserUnsubscribedToListCreatedBy, listEventArgs);
+                this.Raise(AuthenticatedUserUnsubscribedToListCreatedBy, listEventArgs);
             }
             else
             {
@@ -547,9 +546,9 @@ namespace Tweetinvi.Streams
         private void TryRaiseUserUpdatedEvent(JObject userUpdatedEvent)
         {
             var source = GetSourceUser(userUpdatedEvent);
-            var newLoggedUser = _userFactory.GenerateLoggedUserFromDTO(source.UserDTO);
+            var newAuthenticatedUser = _userFactory.GenerateAuthenticatedUserFromDTO(source.UserDTO);
 
-            this.Raise(LoggedUserProfileUpdated, new LoggedUserUpdatedEventArgs(newLoggedUser));
+            this.Raise(AuthenticatedUserProfileUpdated, new AuthenticatedUserUpdatedEventArgs(newAuthenticatedUser));
         }
 
         // Warnings

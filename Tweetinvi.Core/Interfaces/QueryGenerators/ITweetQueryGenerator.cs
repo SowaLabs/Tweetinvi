@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Tweetinvi.Core.Interfaces.DTO;
+using Tweetinvi.Core.Interfaces.Models;
 using Tweetinvi.Core.Parameters;
 using Tweetinvi.Core.Parameters.QueryParameters;
 
@@ -19,8 +20,14 @@ namespace Tweetinvi.Core.Interfaces.QueryGenerators
         string GetPublishRetweetQuery(long tweetId);
 
         // Get Retweets
-        string GetRetweetsQuery(ITweetDTO tweetDTO);
-        string GetRetweetsQuery(long tweetId);
+        string GetRetweetsQuery(ITweetIdentifier tweetDTO, int maxRetweetsToRetrieve);
+
+        // Get Retweeters
+        string GetRetweeterIdsQuery(ITweetIdentifier tweet, int maxRetweetersToRetrieve);
+
+        // Publish UnRetweet
+        string GetUnRetweetQuery(ITweetIdentifier tweetIdentifier);
+        string GetUnRetweetQuery(long tweetId);
 
         // Destroy Tweet
         string GetDestroyTweetQuery(ITweetDTO tweetDTO);
@@ -31,10 +38,10 @@ namespace Tweetinvi.Core.Interfaces.QueryGenerators
         string GetGenerateOEmbedTweetQuery(long tweetId);
 
         // Favorite Tweet
-        string GetFavouriteTweetQuery(ITweetDTO tweetDTO);
-        string GetFavouriteTweetQuery(long tweetId);
+        string GetFavoriteTweetQuery(ITweetDTO tweetDTO);
+        string GetFavoriteTweetQuery(long tweetId);
 
-        string GetUnFavouriteTweetQuery(ITweetDTO tweetDTO);
-        string GetUnFavouriteTweetQuery(long tweetId);
+        string GetUnFavoriteTweetQuery(ITweetDTO tweetDTO);
+        string GetUnFavoriteTweetQuery(long tweetId);
     }
 }

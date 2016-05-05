@@ -68,14 +68,14 @@ namespace Tweetinvi.Logic
             set { _tweetDTO.Text = value; }
         }
 
-        public bool Favourited
+        public bool Favorited
         {
-            get { return _tweetDTO.Favourited; }
+            get { return _tweetDTO.Favorited; }
         }
 
-        public int FavouriteCount
+        public int FavoriteCount
         {
-            get { return _tweetDTO.FavouriteCount; }
+            get { return _tweetDTO.FavoriteCount; }
         }
 
         public ICoordinates Coordinates
@@ -349,6 +349,11 @@ namespace Tweetinvi.Logic
             get { return _tweetDTO.IsTweetDestroyed; }
         }
 
+        public string Url
+        {
+            get { return string.Format("https://twitter.com/{0}/status/{1}", CreatedBy?.ScreenName, Id.ToString().ToLowerInvariant()); }
+        }
+
         private readonly DateTime _tweetLocalCreationDate = DateTime.Now;
         public DateTime TweetLocalCreationDate
         {
@@ -407,6 +412,17 @@ namespace Tweetinvi.Logic
             return retweets.ToList();
         }
 
+        public bool UnRetweet()
+        {
+            var updatedTweet = _tweetController.UnRetweet(this);
+            if (updatedTweet != null)
+            {
+                _tweetDTO.Retweeted = false;
+            }
+
+            return _tweetController.UnRetweet(this) != null;
+        }
+
         public IOEmbedTweet GenerateOEmbedTweet()
         {
             return _tweetController.GenerateOEmbedTweet(_tweetDTO);
@@ -417,19 +433,19 @@ namespace Tweetinvi.Logic
             return _tweetController.DestroyTweet(_tweetDTO);
         }
 
-        public void Favourite()
+        public void Favorite()
         {
             if (_tweetController.FavoriteTweet(_tweetDTO))
             {
-                _tweetDTO.Favourited = true;
+                _tweetDTO.Favorited = true;
             }
         }
 
-        public void UnFavourite()
+        public void UnFavorite()
         {
             if (_tweetController.UnFavoriteTweet(_tweetDTO))
             {
-                _tweetDTO.Favourited = false;
+                _tweetDTO.Favorited = false;
             }
         }
 
@@ -476,14 +492,14 @@ namespace Tweetinvi.Logic
             return await _taskFactory.ExecuteTaskAsync(() => GetRetweets());
         }
 
-        public async Task FavouriteAsync()
+        public async Task FavoriteAsync()
         {
-            await _taskFactory.ExecuteTaskAsync(Favourite);
+            await _taskFactory.ExecuteTaskAsync(Favorite);
         }
 
-        public async Task UnFavouriteAsync()
+        public async Task UnFavoriteAsync()
         {
-            await _taskFactory.ExecuteTaskAsync(UnFavourite);
+            await _taskFactory.ExecuteTaskAsync(UnFavorite);
         }
 
         public async Task<IOEmbedTweet> GenerateOEmbedTweetAsync()

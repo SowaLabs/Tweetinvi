@@ -8,6 +8,7 @@ using Tweetinvi.Controllers.Shared;
 using Tweetinvi.Core.Extensions;
 using Tweetinvi.Core.Helpers;
 using Tweetinvi.Core.Interfaces.DTO;
+using Tweetinvi.Core.Interfaces.Models;
 using Tweetinvi.Core.Interfaces.QueryGenerators;
 using Tweetinvi.Core.Parameters;
 
@@ -37,12 +38,12 @@ namespace Tweetinvi.Controllers.Tweet
         // Get Tweet
         public string GetTweetQuery(long tweetId)
         {
-            return String.Format(Resources.Tweet_Get, tweetId);
+            return string.Format(Resources.Tweet_Get, tweetId);
         }
 
         public string GetTweetsQuery(IEnumerable<long> tweetIds)
         {
-            if (tweetIds == null || tweetIds.Count() == 1)
+            if (tweetIds.IsNullOrEmpty())
             {
                 return null;
             }
@@ -82,8 +83,8 @@ namespace Tweetinvi.Controllers.Tweet
 
                 if (queryParameters.Coordinates != null)
                 {
-                    query.AddParameterToQuery("lat", queryParameters.Coordinates.Latitude);
-                    query.AddParameterToQuery("long", queryParameters.Coordinates.Longitude);
+                    query.AddParameterToQuery("lat", queryParameters.Coordinates.Latitude.ToString(CultureInfo.InvariantCulture));
+                    query.AddParameterToQuery("long", queryParameters.Coordinates.Longitude.ToString(CultureInfo.InvariantCulture));
                 }
 
                 query.AddParameterToQuery("place_id", queryParameters.PlaceId);
@@ -115,23 +116,51 @@ namespace Tweetinvi.Controllers.Tweet
 
         public string GetPublishRetweetQuery(long tweetId)
         {
-            return String.Format(Resources.Tweet_Retweet_Publish, tweetId);
+            return string.Format(Resources.Tweet_Retweet_Publish, tweetId);
         }
 
         // Get Retweets
-        public string GetRetweetsQuery(ITweetDTO tweetDTO)
+
+        public string GetRetweetsQuery(ITweetIdentifier tweetIdentifier, int maxRetweetsToRetrieve)
         {
-            if (!_tweetQueryValidator.IsTweetPublished(tweetDTO))
+            _tweetQueryValidator.ValidateTweetIdentifier(tweetIdentifier);
+
+            var query = new StringBuilder(string.Format(Resources.Tweet_Retweet_GetRetweets, tweetIdentifier.Id));
+            query.AddParameterToQuery("count", maxRetweetsToRetrieve);
+
+            return query.ToString();
+        }
+
+        #region Get Retweeter Ids
+
+        public string GetRetweeterIdsQuery(ITweetIdentifier tweetIdentifier, int maxRetweetersToRetrieve = 100)
+        {
+           _tweetQueryValidator.ValidateTweetIdentifier(tweetIdentifier);
+            
+            var query = new StringBuilder(string.Format(Resources.Tweet_GetRetweeters, tweetIdentifier.Id));
+
+            query.AddParameterToQuery("id", tweetIdentifier.Id);
+            query.AddParameterToQuery("count", maxRetweetersToRetrieve);
+
+            return query.ToString();
+        }
+
+        #endregion
+
+        // UnRetweet
+        public string GetUnRetweetQuery(ITweetIdentifier tweetIdentifier)
+        {
+            if (tweetIdentifier == null)
             {
                 return null;
             }
 
-            return GetRetweetsQuery(tweetDTO.Id);
+            return GetUnRetweetQuery(tweetIdentifier.Id);
         }
 
-        public string GetRetweetsQuery(long tweetId)
+        public string GetUnRetweetQuery(long tweetId)
         {
-            return String.Format(Resources.Tweet_Retweet_GetRetweets, tweetId);
+            return string.Format(Resources.Tweet_UnRetweet, tweetId);
         }
 
         // Destroy Tweet
@@ -147,39 +176,39 @@ namespace Tweetinvi.Controllers.Tweet
 
         public string GetDestroyTweetQuery(long tweetId)
         {
-            return String.Format(Resources.Tweet_Destroy, tweetId);
+            return string.Format(Resources.Tweet_Destroy, tweetId);
         }
 
         // Favorite Tweet
-        public string GetFavouriteTweetQuery(ITweetDTO tweetDTO)
+        public string GetFavoriteTweetQuery(ITweetDTO tweetDTO)
         {
             if (!_tweetQueryValidator.IsTweetPublished(tweetDTO))
             {
                 return null;
             }
 
-            return GetFavouriteTweetQuery(tweetDTO.Id);
+            return GetFavoriteTweetQuery(tweetDTO.Id);
         }
 
-        public string GetFavouriteTweetQuery(long tweetId)
+        public string GetFavoriteTweetQuery(long tweetId)
         {
-            return String.Format(Resources.Tweet_Favorite_Create, tweetId);
+            return string.Format(Resources.Tweet_Favorite_Create, tweetId);
         }
 
         // Unfavourite Tweet
-        public string GetUnFavouriteTweetQuery(ITweetDTO tweetDTO)
+        public string GetUnFavoriteTweetQuery(ITweetDTO tweetDTO)
         {
             if (!_tweetQueryValidator.IsTweetPublished(tweetDTO))
             {
                 return null;
             }
 
-            return GetUnFavouriteTweetQuery(tweetDTO.Id);
+            return GetUnFavoriteTweetQuery(tweetDTO.Id);
         }
 
-        public string GetUnFavouriteTweetQuery(long tweetId)
+        public string GetUnFavoriteTweetQuery(long tweetId)
         {
-            return String.Format(Resources.Tweet_Favorite_Destroy, tweetId);
+            return string.Format(Resources.Tweet_Favorite_Destroy, tweetId);
         }
 
         // OEmbed Tweet
@@ -195,7 +224,8 @@ namespace Tweetinvi.Controllers.Tweet
 
         public string GetGenerateOEmbedTweetQuery(long tweetId)
         {
-            return String.Format(Resources.Tweet_GenerateOEmbed, tweetId);
+            return string.Format(Resources.Tweet_GenerateOEmbed, tweetId);
         }
+
     }
 }

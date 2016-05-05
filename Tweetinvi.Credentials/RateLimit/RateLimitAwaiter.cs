@@ -1,5 +1,5 @@
 ﻿using System;
-using Tweetinvi.Core.Credentials;
+using Tweetinvi.Core.Authentication;
 using Tweetinvi.Core.Events;
 using Tweetinvi.Core.Events.EventArguments;
 using Tweetinvi.Core.Helpers;
@@ -52,9 +52,9 @@ namespace Tweetinvi.Credentials.RateLimit
             }
         }
 
-        public void WaitForCredentialsRateLimit(ITokenRateLimit tokenRateLimit)
+        public void WaitForCredentialsRateLimit(IEndpointRateLimit endpointRateLimit)
         {
-            var timeToWait = GetTimeToWaitFromQueryRateLimit(tokenRateLimit);
+            var timeToWait = GetTimeToWaitFromQueryRateLimit(endpointRateLimit);
 
             Wait(timeToWait);
         }
@@ -74,7 +74,7 @@ namespace Tweetinvi.Credentials.RateLimit
             return GetTimeToWaitFromQueryRateLimit(queryRateLimits);
         }
 
-        private int GetTimeToWaitFromQueryRateLimit(ITokenRateLimit queryRateLimit)
+        public int GetTimeToWaitFromQueryRateLimit(IEndpointRateLimit queryRateLimit)
         {
             if (queryRateLimit == null)
             {

@@ -31,13 +31,13 @@ namespace Tweetinvi.Controllers.Account
             _accountSettingsRequestParametersFactory = accountSettingsRequestParametersFactory;
         }
 
-        public IAccountSettings GetLoggedUserSettings()
+        public IAccountSettings GetAuthenticatedUserSettings()
         {
-            var accountSettingsDTO = _accountQueryExecutor.GetLoggedUserAccountSettings();
+            var accountSettingsDTO = _accountQueryExecutor.GetAuthenticatedUserAccountSettings();
             return GenerateAccountSettingsFromDTO(accountSettingsDTO);
         }
 
-        public IAccountSettings UpdateLoggedUserSettings(
+        public IAccountSettings UpdateAuthenticatedUserSettings(
             IEnumerable<Language> languages = null,
             string timeZone = null, 
             long? trendLocationWoeid = null, 
@@ -54,12 +54,12 @@ namespace Tweetinvi.Controllers.Account
             settings.StartSleepTime = startSleepTime;
             settings.EndSleepTime = endSleepTime;
 
-            return UpdateLoggedUserSettings(settings);
+            return UpdateAuthenticatedUserSettings(settings);
         }
 
-        public IAccountSettings UpdateLoggedUserSettings(IAccountSettingsRequestParameters accountSettingsRequestParameters)
+        public IAccountSettings UpdateAuthenticatedUserSettings(IAccountSettingsRequestParameters accountSettingsRequestParameters)
         {
-            var accountSettingsDTO = _accountQueryExecutor.UpdateLoggedUserSettings(accountSettingsRequestParameters);
+            var accountSettingsDTO = _accountQueryExecutor.UpdateAuthenticatedUserSettings(accountSettingsRequestParameters);
             return GenerateAccountSettingsFromDTO(accountSettingsDTO);
         }
 
@@ -72,6 +72,53 @@ namespace Tweetinvi.Controllers.Account
 
             var parameterOverride = _accountSettingsUnityFactory.GenerateParameterOverrideWrapper("accountSettingsDTO", accountSettingsDTO);
             return _accountSettingsUnityFactory.Create(parameterOverride);
+        }
+
+        // Profile
+        public IAuthenticatedUser UpdateAccountProfile(IAccountUpdateProfileParameters parameters)
+        {
+            var userDTO = _accountQueryExecutor.UpdateProfileParameters(parameters);
+            return _userFactory.GenerateAuthenticatedUserFromDTO(userDTO);
+        }
+
+        public bool UpdateProfileImage(byte[] imageBinary)
+        {
+            return UpdateProfileImage(new AccountUpdateProfileImageParameters(imageBinary));
+        }
+
+        public bool UpdateProfileImage(IAccountUpdateProfileImageParameters parameters)
+        {
+            return _accountQueryExecutor.UpdateProfileImage(parameters);
+        }
+
+        public bool UpdateProfileBanner(byte[] imageBinary)
+        {
+            return UpdateProfileBanner(new AccountUpdateProfileBannerParameters(imageBinary));
+        }
+
+        public bool UpdateProfileBanner(IAccountUpdateProfileBannerParameters parameters)
+        {
+            return _accountQueryExecutor.UpdateProfileBanner(parameters);
+        }
+
+        public bool RemoveUserProfileBanner()
+        {
+            return _accountQueryExecutor.RemoveUserProfileBanner();
+        }
+
+        public bool UpdateProfileBackgroundImage(byte[] imageBinary)
+        {
+            return UpdateProfileBackgroundImage(new AccountUpdateProfileBackgroundImageParameters(imageBinary));
+        }
+
+        public bool UpdateProfileBackgroundImage(long mediaId)
+        {
+            return UpdateProfileBackgroundImage(new AccountUpdateProfileBackgroundImageParameters(mediaId));
+        }
+
+        public bool UpdateProfileBackgroundImage(IAccountUpdateProfileBackgroundImageParameters parameters)
+        {
+            return _accountQueryExecutor.UpdateProfileBackgroundImage(parameters);
         }
 
         // Mute

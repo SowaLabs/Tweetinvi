@@ -1,17 +1,17 @@
-﻿using Tweetinvi.Core.Credentials;
+﻿using Tweetinvi.Core.Authentication;
 using Tweetinvi.Core.Interfaces.Controllers;
 using Tweetinvi.Core.Interfaces.Credentials;
 using Tweetinvi.Core.Interfaces.DTO;
-using Tweetinvi.Core.Interfaces.WebLogic;
 
 namespace Tweetinvi.Controllers.Help
 {
     public interface IHelpQueryExecutor
     {
-        ITokenRateLimits GetCurrentCredentialsRateLimits();
-        ITokenRateLimits GetCredentialsRateLimits(ITwitterCredentials credentials);
+        ICredentialsRateLimits GetCurrentCredentialsRateLimits();
+        ICredentialsRateLimits GetCredentialsRateLimits(ITwitterCredentials credentials);
         string GetTwitterPrivacyPolicy();
         ITwitterConfiguration GetTwitterConfiguration();
+        string GetTermsOfService();
     }
 
     public class HelpQueryExecutor : IHelpQueryExecutor
@@ -30,13 +30,13 @@ namespace Tweetinvi.Controllers.Help
             _credentialsAccessor = credentialsAccessor;
         }
 
-        public ITokenRateLimits GetCurrentCredentialsRateLimits()
+        public ICredentialsRateLimits GetCurrentCredentialsRateLimits()
         {
             string query = _helpQueryGenerator.GetCredentialsLimitsQuery();
-            return _twitterAccessor.ExecuteGETQuery<ITokenRateLimits>(query);
+            return _twitterAccessor.ExecuteGETQuery<ICredentialsRateLimits>(query);
         }
 
-        public ITokenRateLimits GetCredentialsRateLimits(ITwitterCredentials credentials)
+        public ICredentialsRateLimits GetCredentialsRateLimits(ITwitterCredentials credentials)
         {
             var savedCredentials = _credentialsAccessor.CurrentThreadCredentials;
             _credentialsAccessor.CurrentThreadCredentials = credentials;
@@ -62,6 +62,12 @@ namespace Tweetinvi.Controllers.Help
         {
             string query = _helpQueryGenerator.GetTwitterConfigurationQuery();
             return _twitterAccessor.ExecuteGETQuery<ITwitterConfiguration>(query);
+        }
+
+        public string GetTermsOfService()
+        {
+            var query = _helpQueryGenerator.GetTermsOfServiceQuery();
+            return _twitterAccessor.ExecuteGETQueryWithPath<string>(query, "tos");
         }
     }
 }

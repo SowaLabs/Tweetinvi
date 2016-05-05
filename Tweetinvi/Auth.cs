@@ -1,5 +1,5 @@
 ﻿using System;
-using Tweetinvi.Core.Credentials;
+using Tweetinvi.Core.Authentication;
 using Tweetinvi.Core.Exceptions;
 using Tweetinvi.Core.Interfaces.Credentials;
 using Tweetinvi.Credentials;
@@ -28,17 +28,17 @@ namespace Tweetinvi
         }
 
         [ThreadStatic]
-        private static ICredentialsCreator _credentialsCreatorForCurrentThread;
-        private static ICredentialsCreator _credentialsCreator
+        private static IAuthFactory _authFactoryForCurrentThread;
+        private static IAuthFactory AuthFactory
         {
             get
             {
-                if (_credentialsCreatorForCurrentThread == null)
+                if (_authFactoryForCurrentThread == null)
                 {
                     Initialize();
                 }
 
-                return _credentialsCreatorForCurrentThread;
+                return _authFactoryForCurrentThread;
             }
         }
 
@@ -50,7 +50,7 @@ namespace Tweetinvi
         private static void Initialize()
         {
             _credentialsAccessor = TweetinviContainer.Resolve<ICredentialsAccessor>();
-            _credentialsCreatorForCurrentThread = TweetinviContainer.Resolve<ICredentialsCreator>();
+            _authFactoryForCurrentThread = TweetinviContainer.Resolve<IAuthFactory>();
         }
 
         /// <summary>
@@ -99,7 +99,7 @@ namespace Tweetinvi
 
         /// <summary>
         /// Set the current thread credentials based on application only credentials.
-        /// To execute webrequests, application only credentials needs a bearer token.
+        /// To execute http requests, application only credentials needs a bearer token.
         /// Setting  the initializeBearerToken to true will initialize your credentials so that they are ready to be used.
         /// </summary>
         public static ITwitterCredentials SetApplicationOnlyCredentials(string consumerKey, string consumerSecret, bool initializeBearerToken = false)
@@ -116,7 +116,7 @@ namespace Tweetinvi
 
         /// <summary>
         /// Set the current thread credentials based on application only credentials.
-        /// To execute webrequests, application only credentials needs a bearer token.
+        /// To execute http requests, application only credentials needs a bearer token.
         /// </summary>
         public static ITwitterCredentials SetApplicationOnlyCredentials(string consumerKey, string consumerSecret, string bearerToken)
         {
@@ -148,7 +148,7 @@ namespace Tweetinvi
 
             if (force || (isBearerRequired && !isBearerAlreadySet))
             {
-                _credentialsCreator.InitializeApplicationBearer(credentials);
+                AuthFactory.InitializeApplicationBearer(credentials);
             }
         }
 
@@ -157,7 +157,7 @@ namespace Tweetinvi
         /// </summary>
         public static bool InvalidateCredentials(ITwitterCredentials credentials = null)
         {
-            return _credentialsCreator.InvalidateToken(credentials ?? CredentialsAccessor.CurrentThreadCredentials);
+            return AuthFactory.InvalidateCredentials(credentials ?? CredentialsAccessor.CurrentThreadCredentials);
         }
 
         /// <summary>

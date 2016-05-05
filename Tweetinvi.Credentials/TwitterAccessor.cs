@@ -8,9 +8,9 @@ using Tweetinvi.Core.Helpers;
 using Tweetinvi.Core.Interfaces.Credentials;
 using Tweetinvi.Core.Interfaces.DTO.QueryDTO;
 using Tweetinvi.Core.Interfaces.Exceptions;
+using Tweetinvi.Core.Web;
 using Tweetinvi.Core.Wrappers;
 using Tweetinvi.Credentials.QueryJsonConverters;
-using Tweetinvi.Logic.Exceptions;
 using Tweetinvi.WebLogic;
 
 namespace Tweetinvi.Credentials
@@ -112,20 +112,8 @@ namespace Tweetinvi.Credentials
         {
             if (paths != null && paths.Length > 0)
             {
-                JToken token;
-                if (!jObject.TryGetValue(paths[0], out token))
-                {
-                    return null;
-                }
-
-                for (int i = 1; i < paths.Length; ++i)
-                {
-                    if (!jObject.TryGetValue(paths[i], out token))
-                    {
-                        return null;
-                    }
-                }
-
+                var path = string.Join(".", paths);
+                var token = jObject.SelectToken(path);
                 return _jObjectStaticWrapper.ToObject<T>(token);
             }
 
@@ -224,22 +212,22 @@ namespace Tweetinvi.Credentials
         }
 
         // Multipart Query
-        public T ExecuteMultipartQuery<T>(string query, IEnumerable<byte[]> binaries, string contentId, JsonConverter[] converters = null) where T : class
+        public T ExecuteMultipartQuery<T>(IMultipartHttpRequestParameters parameters, JsonConverter[] converters = null) where T : class
         {
-            string jsonResponse = ExecuteMultipartQuery(query, binaries, contentId);
+            string jsonResponse = ExecuteMultipartQuery(parameters);
             return _jsonObjectConverter.DeserializeObject<T>(jsonResponse, converters);
         }
 
-        public bool TryExecuteMultipartQuery(string query, IEnumerable<byte[]> binaries, string contentId)
+        public bool TryExecuteMultipartQuery(IMultipartHttpRequestParameters parameters)
         {
             string unused;
-            return TryExecuteMultipartQuery(query, binaries, contentId, out unused);
+            return TryExecuteMultipartQuery(parameters, out unused);
         }
 
-        public string ExecuteMultipartQuery(string query, IEnumerable<byte[]> binaries, string contentId)
+        public string ExecuteMultipartQuery(IMultipartHttpRequestParameters parameters)
         {
             string result;
-            TryExecuteMultipartQuery(query, binaries, contentId, out result);
+            TryExecuteMultipartQuery(parameters, out result);
 
             return result;
         }
@@ -349,7 +337,7 @@ namespace Tweetinvi.Credentials
 
         private T ExecuteCursorQuery<T>(string baseQuery, long cursor, bool storeJson) where T : class, IBaseCursorQueryDTO
         {
-            var query = String.Format("{0}cursor={1}", baseQuery, cursor);
+            var query = string.Format("{0}cursor={1}", baseQuery, cursor);
 
             string json;
             if (TryExecuteJsonGETQuery(query, out json))
@@ -387,16 +375,16 @@ namespace Tweetinvi.Credentials
             }
         }
 
-        private bool TryExecuteMultipartQuery(string query, IEnumerable<byte[]> binaries, string contentId, out string result)
+        private bool TryExecuteMultipartQuery(IMultipartHttpRequestParameters parameters, out string result)
         {
-            if (query == null)
+            if (parameters.Query == null)
             {
                 throw new ArgumentException("At least one of the arguments provided to the query was invalid.");
             }
 
             try
             {
-                result = _twitterRequestHandler.ExecuteMultipartQuery(query, contentId, HttpMethod.POST, binaries);
+                result = _twitterRequestHandler.ExecuteMultipartQuery(parameters);
                 return true;
             }
             catch (TwitterException ex)

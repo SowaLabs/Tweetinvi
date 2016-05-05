@@ -59,7 +59,7 @@ namespace Tweetinvi.Logic
             _container.RegisterType<IOEmbedTweet, OEmbedTweet>();
 
             _container.RegisterType<IUser, User>();
-            _container.RegisterType<ILoggedUser, LoggedUser>();
+            _container.RegisterType<IAuthenticatedUser, AuthenticatedUser>();
 
             _container.RegisterType<ITwitterList, TwitterList>();
 
@@ -101,6 +101,7 @@ namespace Tweetinvi.Logic
             _container.RegisterType<ITwitterListUpdateQueryParameters, TwitterListUpdateQueryParameters>();
             _container.RegisterType<IGetTweetsFromListQueryParameters, GetTweetsFromListQueryParameters>();
             _container.RegisterType<IUserTimelineQueryParameters, UserTimelineQueryParameters>();
+            _container.RegisterType<IGetUserFavoritesQueryParameters, GetUserFavoritesQueryParameters>();
         }
 
         private void InitializeWrappers()

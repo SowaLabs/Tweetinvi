@@ -7,7 +7,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Testinvi.Helpers;
 using Tweetinvi.Core;
 using Tweetinvi.Core.Attributes;
-using Tweetinvi.Core.Extensions;
 using Tweetinvi.Core.Helpers;
 using Tweetinvi.Core.Injectinvi;
 using Tweetinvi.Core.Interfaces.Credentials;
@@ -22,7 +21,7 @@ namespace Testinvi.Tweetinvi.Credentials.RateLimitTests
     {
         private FakeClassBuilder<RateLimitHelper> _fakeBuilder;
 
-        private ITokenRateLimits _tokenRateLimits;
+        private ICredentialsRateLimits _credentialsRateLimits;
         private IWebHelper _webHelper;
         private IAttributeHelper _attributeHelper;
 
@@ -30,7 +29,7 @@ namespace Testinvi.Tweetinvi.Credentials.RateLimitTests
         public void Initialize()
         {
             _fakeBuilder = new FakeClassBuilder<RateLimitHelper>();
-            _tokenRateLimits = A.Fake<ITokenRateLimits>();
+            _credentialsRateLimits = A.Fake<ICredentialsRateLimits>();
 
             _webHelper = new WebHelper(A.Fake<ITweetinviSettingsAccessor>());
             _attributeHelper = new AttributeHelper();
@@ -43,7 +42,7 @@ namespace Testinvi.Tweetinvi.Credentials.RateLimitTests
             var rateLimitHelper = CreateRateLimitHelper();
 
             // Act
-            var result = rateLimitHelper.GetTokenRateLimitFromQuery("UNEXPECTED QUERY", _tokenRateLimits);
+            var result = rateLimitHelper.GetEndpointRateLimitFromQuery("UNEXPECTED QUERY", _credentialsRateLimits);
 
             // Assert
             Assert.IsNull(result);
@@ -63,7 +62,7 @@ namespace Testinvi.Tweetinvi.Credentials.RateLimitTests
             var rateLimitHelper = CreateRateLimitHelper();
 
             // Act
-            var isQueryAssociatedToARateLimit = rateLimitHelper.IsQueryAssociatedWithTokenRateLimit(ACCOUNT_SETTINGS_QUERY, _tokenRateLimits);
+            var isQueryAssociatedToARateLimit = rateLimitHelper.IsQueryAssociatedWithEndpointRateLimit(ACCOUNT_SETTINGS_QUERY, _credentialsRateLimits);
 
             // Assert
             Assert.IsTrue(isQueryAssociatedToARateLimit);
@@ -76,7 +75,7 @@ namespace Testinvi.Tweetinvi.Credentials.RateLimitTests
             var rateLimitHelper = CreateRateLimitHelper();
 
             // Act
-            var isQueryAssociatedToARateLimit = rateLimitHelper.IsQueryAssociatedWithTokenRateLimit(ACCOUNT_SETTINGS_QUERY, null);
+            var isQueryAssociatedToARateLimit = rateLimitHelper.IsQueryAssociatedWithEndpointRateLimit(ACCOUNT_SETTINGS_QUERY, null);
 
             // Assert
             Assert.IsFalse(isQueryAssociatedToARateLimit);
@@ -89,7 +88,7 @@ namespace Testinvi.Tweetinvi.Credentials.RateLimitTests
             var rateLimitHelper = CreateRateLimitHelper();
 
             // Act
-            var isQueryAssociatedToARateLimit = rateLimitHelper.IsQueryAssociatedWithTokenRateLimit("http://tweetinvi.codeplex.com", _tokenRateLimits);
+            var isQueryAssociatedToARateLimit = rateLimitHelper.IsQueryAssociatedWithEndpointRateLimit("http://tweetinvi.codeplex.com", _credentialsRateLimits);
 
             // Assert
             Assert.IsFalse(isQueryAssociatedToARateLimit);
@@ -102,27 +101,10 @@ namespace Testinvi.Tweetinvi.Credentials.RateLimitTests
             var rateLimitHelper = CreateRateLimitHelper();
 
             // Act
-            var isQueryAssociatedToARateLimit = rateLimitHelper.IsQueryAssociatedWithTokenRateLimit("Test me a river!", _tokenRateLimits);
+            var isQueryAssociatedToARateLimit = rateLimitHelper.IsQueryAssociatedWithEndpointRateLimit("Test me a river!", _credentialsRateLimits);
 
             // Assert
             Assert.IsFalse(isQueryAssociatedToARateLimit);
-        }
-
-        // ReSharper disable once UnassignedField.Compiler
-        [CustomTwitterEndpoint("salut")]
-        private void NonMatchingTestMethod() { }
-
-        [TestMethod]
-        public void GetTokenRateLimitsFromMethod_2()
-        {
-            // Arrange
-            var rateLimitHelper = CreateRateLimitHelper();
-
-            // Act
-            var tokenRateLimits = rateLimitHelper.GetTokenRateLimitsFromMethod(() => NonMatchingTestMethod(), _tokenRateLimits);
-
-            // Assert
-            Assert.IsTrue(tokenRateLimits.IsEmpty());
         }
 
         [CustomTwitterEndpoint("https://api.twitter.com/1.1/account/settings.json")]
@@ -135,10 +117,10 @@ namespace Testinvi.Tweetinvi.Credentials.RateLimitTests
             var rateLimitHelper = CreateRateLimitHelper();
 
             // Act
-            var tokenRateLimits = rateLimitHelper.GetTokenRateLimitsFromMethod(() => MatchingTestMethod(), _tokenRateLimits);
+            var tokenRateLimits = rateLimitHelper.GetTokenRateLimitsFromMethod(() => MatchingTestMethod(), _credentialsRateLimits);
 
             // Assert
-            Assert.IsTrue(tokenRateLimits.First() == _tokenRateLimits.AccountSettingsLimit);
+            Assert.IsTrue(tokenRateLimits.First() == _credentialsRateLimits.AccountSettingsLimit);
         }
 
         [TestMethod]
@@ -148,7 +130,7 @@ namespace Testinvi.Tweetinvi.Credentials.RateLimitTests
             var rateLimitHelper = CreateRateLimitHelper();
 
             // Act
-            var tokenRateLimits = rateLimitHelper.GetTokenRateLimitsFromMethod(null, _tokenRateLimits);
+            var tokenRateLimits = rateLimitHelper.GetTokenRateLimitsFromMethod(null, _credentialsRateLimits);
 
             // Assert
             Assert.IsNull(tokenRateLimits);
@@ -162,20 +144,20 @@ namespace Testinvi.Tweetinvi.Credentials.RateLimitTests
 
             // Act
             Expression<Action> exp = Expression<Action>.Lambda<Action>(Expression.Empty());
-            var tokenRateLimits = rateLimitHelper.GetTokenRateLimitsFromMethod(exp, _tokenRateLimits);
+            var tokenRateLimits = rateLimitHelper.GetTokenRateLimitsFromMethod(exp, _credentialsRateLimits);
 
             // Assert
             Assert.IsNull(tokenRateLimits);
         }
 
-        private void GetTokenRateLimitFromQuery_EndpointAssociatedCorrectly(Expression<Func<ITokenRateLimits, ITokenRateLimit>> rateLimit, string associatedURL, IRateLimitHelper rateLimitHelper)
+        private void GetTokenRateLimitFromQuery_EndpointAssociatedCorrectly(Expression<Func<ICredentialsRateLimits, IEndpointRateLimit>> rateLimit, string associatedURL, IRateLimitHelper rateLimitHelper)
         {
             // Arrange
-            var fakeTokenRateLimit = A.Fake<ITokenRateLimit>();
-            _tokenRateLimits.CallsTo(rateLimit).Returns(fakeTokenRateLimit);
+            var fakeTokenRateLimit = A.Fake<IEndpointRateLimit>();
+            _credentialsRateLimits.CallsTo(rateLimit).Returns(fakeTokenRateLimit);
 
             // Act
-            var tokenRateLimit = rateLimitHelper.GetTokenRateLimitFromQuery(associatedURL, _tokenRateLimits);
+            var tokenRateLimit = rateLimitHelper.GetEndpointRateLimitFromQuery(associatedURL, _credentialsRateLimits);
 
             // Assert
             Assert.AreEqual(tokenRateLimit, fakeTokenRateLimit);

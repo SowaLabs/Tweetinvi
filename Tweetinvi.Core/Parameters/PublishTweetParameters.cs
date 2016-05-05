@@ -6,9 +6,19 @@ using Tweetinvi.Core.Interfaces.Models;
 
 namespace Tweetinvi.Core.Parameters
 {
+    /// <summary>
+    /// https://dev.twitter.com/rest/reference/post/statuses/update
+    /// </summary>
     public interface IPublishTweetParameters : ICustomRequestParameters
     {
+        /// <summary>
+        /// Message to publish as a twwweet
+        /// </summary>
         string Text { get; }
+
+        /// <summary>
+        /// Optional parameters to publish the tweet
+        /// </summary>
         IPublishTweetOptionalParameters Parameters { get; }
 
         #region Copy of IPublishTweetOptionalParameters
@@ -68,13 +78,16 @@ namespace Tweetinvi.Core.Parameters
         bool? PossiblySensitive { get; set; }
 
         /// <summary>
-        /// Tweet's creator will not be populated. 
-        /// Only the user id property will be available.
+        /// If set to true, the creator property (IUser) will only contain the id.
         /// </summary>
         bool? TrimUser { get; set; }
 
         #endregion
     }
+
+    /// <summary>
+    /// https://dev.twitter.com/rest/reference/post/statuses/update
+    /// </summary>
     public class PublishTweetParameters : IPublishTweetParameters
     {
         public PublishTweetParameters(string text, IPublishTweetOptionalParameters optionalParameters = null)

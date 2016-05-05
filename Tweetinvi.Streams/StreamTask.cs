@@ -83,7 +83,7 @@ namespace Tweetinvi.Streams
             }
 
             this.Raise(StreamStarted);
-            SetStreamState(StreamState.Resume);
+            SetStreamState(StreamState.Running);
 
             _twitterQuery = _generateTwitterQuery();
 
@@ -142,7 +142,7 @@ namespace Tweetinvi.Streams
 
                     numberOfRepeatedFailures = 0;
 
-                    if (StreamState == StreamState.Resume && !_processObject(json))
+                    if (StreamState == StreamState.Running && !_processObject(json))
                     {
                         SetStreamState(StreamState.Stop);
                         break;
@@ -216,7 +216,7 @@ namespace Tweetinvi.Streams
 
 
                 var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);
-                var body = await response.Content.ReadAsStreamAsync();
+                var body = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
 
                 return new StreamReader(body, Encoding.GetEncoding("utf-8"));
             }
@@ -248,8 +248,8 @@ namespace Tweetinvi.Streams
 
             if (resultingTask != requestTask)
             {
-                var urlParameter = new ConstructorNamedParameter("url", twitterQuery.QueryURL);
-                var twitterTimeoutException = _twitterTimeoutExceptionFactory.Create(urlParameter);
+                var twitterQueryParameter = _twitterTimeoutExceptionFactory.GenerateParameterOverrideWrapper("twitterQuery", twitterQuery);
+                var twitterTimeoutException = _twitterTimeoutExceptionFactory.Create(twitterQueryParameter);
                 throw (Exception)twitterTimeoutException;
             }
 
@@ -338,7 +338,7 @@ namespace Tweetinvi.Streams
 
         public void Resume()
         {
-            SetStreamState(StreamState.Resume);
+            SetStreamState(StreamState.Running);
         }
 
         public void Pause()
@@ -368,7 +368,7 @@ namespace Tweetinvi.Streams
                 return;
             }
 
-            if (_isNew && value == StreamState.Resume)
+            if (_isNew && value == StreamState.Running)
             {
                 _isNew = false;
             }

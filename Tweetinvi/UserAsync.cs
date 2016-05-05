@@ -1,25 +1,25 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Tweetinvi.Core.Credentials;
+using Tweetinvi.Core.Authentication;
 using Tweetinvi.Core.Enum;
 using Tweetinvi.Core.Interfaces;
 using Tweetinvi.Core.Interfaces.DTO;
 using Tweetinvi.Core.Interfaces.Models;
-using Tweetinvi.Core.Interfaces.WebLogic;
+using Tweetinvi.Core.Parameters;
 
 namespace Tweetinvi
 {
     public static class UserAsync
     {
         // User Factory
-        public static async Task<ILoggedUser> GetLoggedUser()
+        public static async Task<IAuthenticatedUser> GetAuthenticatedUser()
         {
-            return await Sync.ExecuteTaskAsync(() => User.GetLoggedUser());
+            return await Sync.ExecuteTaskAsync(() => User.GetAuthenticatedUser());
         }
 
-        public static async Task<ILoggedUser> GetLoggedUser(ITwitterCredentials credentials)
+        public static async Task<IAuthenticatedUser> GetAuthenticatedUser(ITwitterCredentials credentials)
         {
-            return await Sync.ExecuteTaskAsync(() => User.GetLoggedUser(credentials));
+            return await Sync.ExecuteTaskAsync(() => User.GetAuthenticatedUser(credentials));
         }
 
         public static async Task<IUser> GetUserFromId(long userId)
@@ -128,24 +128,20 @@ namespace Tweetinvi
         }
 
         // Favourites
-        public static async Task<IEnumerable<ITweet>> GetFavouriteTweets(IUser user, int maxFavouriteTweetsToRetrieve = 40)
+
+        public static async Task<IEnumerable<ITweet>> GetFavoriteTweets(IUserIdentifier userDTO, IGetUserFavoritesParameters parameters = null)
         {
-            return await Sync.ExecuteTaskAsync(() => User.GetFavouriteTweets(user, maxFavouriteTweetsToRetrieve));
+            return await Sync.ExecuteTaskAsync(() => User.GetFavoriteTweets(userDTO, parameters));
         }
 
-        public static async Task<IEnumerable<ITweet>> GetFavouriteTweets(IUserIdentifier userDTO, int maxFavouriteTweetsToRetrieve = 40)
+        public static async Task<IEnumerable<ITweet>> GetFavoriteTweets(long userId, IGetUserFavoritesParameters parameters = null)
         {
-            return await Sync.ExecuteTaskAsync(() => User.GetFavouriteTweets(userDTO, maxFavouriteTweetsToRetrieve));
+            return await Sync.ExecuteTaskAsync(() => User.GetFavoriteTweets(userId, parameters));
         }
 
-        public static async Task<IEnumerable<ITweet>> GetFavouriteTweets(long userId, int maxFavouriteTweetsToRetrieve = 40)
+        public static async Task<IEnumerable<ITweet>> GetFavoriteTweets(string userScreenName, IGetUserFavoritesParameters parameters = null)
         {
-            return await Sync.ExecuteTaskAsync(() => User.GetFavouriteTweets(userId, maxFavouriteTweetsToRetrieve));
-        }
-
-        public static async Task<IEnumerable<ITweet>> GetFavouriteTweets(string userScreenName, int maxFavouriteTweetsToRetrieve = 40)
-        {
-            return await Sync.ExecuteTaskAsync(() => User.GetFavouriteTweets(userScreenName, maxFavouriteTweetsToRetrieve));
+            return await Sync.ExecuteTaskAsync(() => User.GetFavoriteTweets(userScreenName, parameters));
         }
 
         // Block User

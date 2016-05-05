@@ -3,11 +3,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
 using System.Reflection;
 using Tweetinvi;
 using Tweetinvi.Core;
-using Tweetinvi.Core.Credentials;
+using Tweetinvi.Core.Authentication;
 using Tweetinvi.Core.Enum;
 using Tweetinvi.Core.Extensions;
 using Tweetinvi.Core.Interfaces;
@@ -27,7 +26,7 @@ namespace Examplinvi
 
     // WINDOWS PHONE 8 developers
     // If you are a windows phone developer, please use the Async classes
-    // User.GetLoggedUser(); -> await UserAsync.GetLoggedUser();
+    // User.GetAuthenticatedUser(); -> await UserAsync.GetAuthenticatedUser();
 
     class Program
     {
@@ -37,14 +36,16 @@ namespace Examplinvi
 
             TweetinviEvents.QueryBeforeExecute += (sender, args) =>
             {
-                // Console.WriteLine(args.QueryURL);
+                Console.WriteLine(args.QueryURL);
             };
+
+            var authenticatedUser = User.GetAuthenticatedUser();
 
             GenerateCredentialExamples();
             UserLiveFeedExamples();
             TweetExamples();
             UserExamples();
-            LoggedUserExamples();
+            AuthenticatedUserExamples();
             TimelineExamples();
             MessageExamples();
             TwitterListExamples();
@@ -77,12 +78,12 @@ namespace Examplinvi
             }
 
             // With captcha
-            Examples.CredentialsCreator_WithCaptcha_StepByStep("consumer_key", "consumer_secret");
+            Examples.AuthFlow_WithCaptcha_StepByStep("consumer_key", "consumer_secret");
 
             // With callback URL
-            Examples.CredentialsCreator_CreateFromRedirectedCallbackURL_StepByStep("consumer_key", "consumer_secret");
+            Examples.AuthFlow_CreateFromRedirectedCallbackURL_StepByStep("consumer_key", "consumer_secret");
 
-            Examples.CredentialsCreator_CreateFromRedirectedVerifierCode_StepByStep("consumer_key", "consumer_secret");
+            Examples.AuthFlow_CreateFromRedirectedVerifierCode_StepByStep("consumer_key", "consumer_secret");
         }
 
         private static void UserLiveFeedExamples()
@@ -104,11 +105,11 @@ namespace Examplinvi
 
             Examples.Tweet_GetExistingTweet(210462857140252672);
 
-            Examples.Tweet_PublishTweet(String.Format("I love tweetinvi! ({0})", Guid.NewGuid()));
+            Examples.Tweet_PublishTweet(string.Format("I love tweetinvi! ({0})", Guid.NewGuid()));
             Examples.Tweet_PublishTweetWithImage("Uploadinvi?", "YOUR_FILE_PATH.png");
 
-            Examples.Tweet_PublishTweetInReplyToAnotherTweet(String.Format("I love tweetinvi! ({0})", Guid.NewGuid()), 392711547081854976);
-            Examples.Tweet_PublishTweetWithGeo(String.Format("I love tweetinvi! ({0})", Guid.NewGuid()));
+            Examples.Tweet_PublishTweetInReplyToAnotherTweet(string.Format("I love tweetinvi! ({0})", Guid.NewGuid()), 392711547081854976);
+            Examples.Tweet_PublishTweetWithGeo(string.Format("I love tweetinvi! ({0})", Guid.NewGuid()));
 
             Examples.Tweet_Destroy();
 
@@ -151,7 +152,7 @@ namespace Examplinvi
             Examples.User_DownloadProfileImage(Examples.USER_SCREEN_NAME_TO_TEST);
         }
 
-        private static void LoggedUserExamples()
+        private static void AuthenticatedUserExamples()
         {
             if (!Examples.ExecuteExamples)
             {
@@ -159,14 +160,14 @@ namespace Examplinvi
             }
 
             Examples.Friendship_GetMultipleRelationships();
-            Examples.LoggedUser_GetIncomingRequests();
-            Examples.LoggedUser_GetOutgoingRequests();
-            Examples.LoggedUser_FollowUser(Examples.USER_SCREEN_NAME_TO_TEST);
-            Examples.LoggedUser_UnFollowUser(Examples.USER_SCREEN_NAME_TO_TEST);
-            Examples.LoggedUser_UpdateFollowAuthorizationsForUser(Examples.USER_SCREEN_NAME_TO_TEST);
-            Examples.LoggedUser_GetLatestReceivedMessages();
-            Examples.LoggedUser_GetLatestSentMessages();
-            Examples.LoggedUser_GetAccountSettings();
+            Examples.AuthenticatedUser_GetIncomingRequests();
+            Examples.AuthenticatedUser_GetOutgoingRequests();
+            Examples.AuthenticatedUser_FollowUser(Examples.USER_SCREEN_NAME_TO_TEST);
+            Examples.AuthenticatedUser_UnFollowUser(Examples.USER_SCREEN_NAME_TO_TEST);
+            Examples.AuthenticatedUser_UpdateFollowAuthorizationsForUser(Examples.USER_SCREEN_NAME_TO_TEST);
+            Examples.AuthenticatedUser_GetLatestReceivedMessages();
+            Examples.AuthenticatedUser_GetLatestSentMessages();
+            Examples.AuthenticatedUser_GetAccountSettings();
         }
 
         private static void TimelineExamples()
@@ -188,8 +189,8 @@ namespace Examplinvi
                 return;
             }
 
-            Examples.LoggedUser_GetLatestReceivedMessages();
-            Examples.LoggedUser_GetLatestSentMessages();
+            Examples.AuthenticatedUser_GetLatestReceivedMessages();
+            Examples.AuthenticatedUser_GetLatestSentMessages();
 
             Examples.Message_GetLatests();
             Examples.Message_GetMessageFromId(381069551028293633);
@@ -342,27 +343,34 @@ namespace Examplinvi
 
         // Get credentials with captcha system
         // ReSharper disable UnusedMethodReturnValue.Local
-        public static ITwitterCredentials CredentialsCreator_WithCaptcha_StepByStep(string consumerKey, string consumerSecret)
+        public static ITwitterCredentials AuthFlow_WithCaptcha_StepByStep(string consumerKey, string consumerSecret)
         {
-            var applicationCredentials = new ConsumerCredentials(consumerKey, consumerSecret);
-            var url = CredentialsCreator.GetAuthorizationURL(applicationCredentials);
-            Console.WriteLine("Go on : {0}", url);
-            Console.WriteLine("Enter the captch : ");
-            var captcha = Console.ReadLine();
+var applicationCredentials = new ConsumerCredentials(consumerKey, consumerSecret);
+var authenticationContext = AuthFlow.InitAuthentication(applicationCredentials);
+Console.WriteLine("Go on : {0}", authenticationContext.AuthorizationURL);
+Console.WriteLine("Enter the captch : ");
+var captcha = Console.ReadLine();
 
-            var newCredentials = CredentialsCreator.GetCredentialsFromVerifierCode(captcha, applicationCredentials);
-            Console.WriteLine("Access Token = {0}", newCredentials.AccessToken);
-            Console.WriteLine("Access Token Secret = {0}", newCredentials.AccessTokenSecret);
+try
+{
+    var newCredentials = AuthFlow.CreateCredentialsFromVerifierCode(captcha, authenticationContext);
+    Console.WriteLine("Access Token = {0}", newCredentials.AccessToken);
+    Console.WriteLine("Access Token Secret = {0}", newCredentials.AccessTokenSecret);
 
-            return newCredentials;
+    return newCredentials;
+}
+catch (Exception)
+{
+    return null;
+}
         }
 
         // Get credentials with callbackURL system
-        public static ITwitterCredentials CredentialsCreator_CreateFromRedirectedCallbackURL_StepByStep(string consumerKey, string consumerSecret)
+        public static ITwitterCredentials AuthFlow_CreateFromRedirectedCallbackURL_StepByStep(string consumerKey, string consumerSecret)
         {
             var applicationCredentials = new ConsumerCredentials(consumerKey, consumerSecret);
-            var url = CredentialsCreator.GetAuthorizationURL(applicationCredentials, "https://tweetinvi.codeplex.com");
-            Console.WriteLine("Go on : {0}", url);
+            var authenticationContext = AuthFlow.InitAuthentication(applicationCredentials, "https://tweetinvi.codeplex.com");
+            Console.WriteLine("Go on : {0}", authenticationContext);
             Console.WriteLine("When redirected to your website copy and paste the URL: ");
 
             // Enter a value like: https://tweeetinvi.codeplex.com?oauth_token={tokenValue}&oauth_verifier={verifierValue}
@@ -370,18 +378,18 @@ namespace Examplinvi
             var callbackURL = Console.ReadLine();
 
             // Here we provide the entire URL where the user has been redirected
-            var newCredentials = CredentialsCreator.GetCredentialsFromCallbackURL(callbackURL, applicationCredentials);
+            var newCredentials = AuthFlow.CreateCredentialsFromCallbackURL(callbackURL, authenticationContext);
             Console.WriteLine("Access Token = {0}", newCredentials.AccessToken);
             Console.WriteLine("Access Token Secret = {0}", newCredentials.AccessTokenSecret);
 
             return newCredentials;
         }
 
-        public static ITwitterCredentials CredentialsCreator_CreateFromRedirectedVerifierCode_StepByStep(string consumerKey, string consumerSecret)
+        public static ITwitterCredentials AuthFlow_CreateFromRedirectedVerifierCode_StepByStep(string consumerKey, string consumerSecret)
         {
             var applicationCredentials = new ConsumerCredentials(consumerKey, consumerSecret);
-            var url = CredentialsCreator.GetAuthorizationURL(applicationCredentials, "https://tweetinvi.codeplex.com");
-            Console.WriteLine("Go on : {0}", url);
+            var authenticationContext = AuthFlow.InitAuthentication(applicationCredentials, "https://tweetinvi.codeplex.com");
+            Console.WriteLine("Go on : {0}", authenticationContext);
             Console.WriteLine("When redirected to your website copy and paste the value of the oauth_verifier : ");
 
             // For the following redirection https://tweetinvi.codeplex.com?oauth_token=UR3eTEwDXFNhkMnjqz0oFbRauvAm4YhnF67KE6hO8Q&oauth_verifier=woXaKhpDtX6vhDVPl7TU6955qdQeH3cgz6xDvRZRA4A
@@ -390,7 +398,7 @@ namespace Examplinvi
             var verifierCode = Console.ReadLine();
 
             // Here we only provide the verifier code
-            var newCredentials = CredentialsCreator.GetCredentialsFromVerifierCode(verifierCode, applicationCredentials);
+            var newCredentials = AuthFlow.CreateCredentialsFromVerifierCode(verifierCode, authenticationContext);
             Console.WriteLine("Access Token = {0}", newCredentials.AccessToken);
             Console.WriteLine("Access Token Secret = {0}", newCredentials.AccessTokenSecret);
 
@@ -447,7 +455,7 @@ namespace Examplinvi
             var tweetToReplyTo = Tweet.GetTweet(tweetIdtoReplyTo);
 
             // We must add @screenName of the author of the tweet we want to reply to
-            var textToPublish = string.Format("@{0} {1}",tweetToReplyTo.CreatedBy.ScreenName, text);
+            var textToPublish = string.Format("@{0} {1}", tweetToReplyTo.CreatedBy.ScreenName, text);
             var tweet = Tweet.PublishTweetInReplyTo(textToPublish, tweetIdtoReplyTo);
             Console.WriteLine("Publish success? {0}", tweet != null);
         }
@@ -522,8 +530,8 @@ namespace Examplinvi
         public static void Tweet_SetTweetAsFavorite(long tweetId)
         {
             var tweet = Tweet.GetTweet(tweetId);
-            tweet.Favourite();
-            Console.WriteLine("Is tweet now favourite? -> {0}", tweet.Favourited);
+            tweet.Favorite();
+            Console.WriteLine("Is tweet now favourite? -> {0}", tweet.Favorited);
         }
 
         #endregion
@@ -532,7 +540,7 @@ namespace Examplinvi
 
         public static void User_GetCurrentUser()
         {
-            var user = User.GetLoggedUser();
+            var user = User.GetAuthenticatedUser();
             Console.WriteLine(user.ScreenName);
         }
 
@@ -664,16 +672,16 @@ namespace Examplinvi
 
         public static void User_GetBlockedUsers()
         {
-            var loggedUser = User.GetLoggedUser();
-            loggedUser.GetBlockedUsers();
-            loggedUser.GetBlockedUserIds();
+            var authenticatedUser = User.GetAuthenticatedUser();
+            authenticatedUser.GetBlockedUsers();
+            authenticatedUser.GetBlockedUserIds();
         }
 
         public static void User_DownloadProfileImage(string userName)
         {
             var user = User.GetUserFromScreenName(userName);
             var stream = user.GetProfileImageStream(ImageSize.bigger);
-            var fileStream = new FileStream(String.Format("{0}.jpg", user.Id), FileMode.Create);
+            var fileStream = new FileStream(string.Format("{0}.jpg", user.Id), FileMode.Create);
             stream.CopyTo(fileStream);
 
             string assemblyPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().CodeBase);
@@ -685,18 +693,18 @@ namespace Examplinvi
 
         public static void User_GetMutedUsers()
         {
-            var loggedUser = User.GetLoggedUser();
-            loggedUser.GetMutedUserIds();
+            var authenticatedUser = User.GetAuthenticatedUser();
+            authenticatedUser.GetMutedUserIds();
         }
 
         #endregion
 
-        #region LoggedUser
+        #region AuthenticatedUser
 
-        public static void LoggedUser_GetIncomingRequests()
+        public static void AuthenticatedUser_GetIncomingRequests()
         {
-            var loggedUser = User.GetLoggedUser();
-            var usersRequestingFriendship = loggedUser.GetUsersRequestingFriendship();
+            var authenticatedUser = User.GetAuthenticatedUser();
+            var usersRequestingFriendship = authenticatedUser.GetUsersRequestingFriendship();
 
             foreach (var user in usersRequestingFriendship)
             {
@@ -704,10 +712,10 @@ namespace Examplinvi
             }
         }
 
-        public static void LoggedUser_GetOutgoingRequests()
+        public static void AuthenticatedUser_GetOutgoingRequests()
         {
-            var loggedUser = User.GetLoggedUser();
-            var usersRequestingFriendship = loggedUser.GetUsersYouRequestedToFollow();
+            var authenticatedUser = User.GetAuthenticatedUser();
+            var usersRequestingFriendship = authenticatedUser.GetUsersYouRequestedToFollow();
 
             foreach (var user in usersRequestingFriendship)
             {
@@ -715,43 +723,43 @@ namespace Examplinvi
             }
         }
 
-        public static void LoggedUser_FollowUser(string userName)
+        public static void AuthenticatedUser_FollowUser(string userName)
         {
-            var loggedUser = User.GetLoggedUser();
+            var authenticatedUser = User.GetAuthenticatedUser();
             var userToFollow = User.GetUserFromScreenName(userName);
 
-            if (loggedUser.FollowUser(userToFollow))
+            if (authenticatedUser.FollowUser(userToFollow))
             {
                 Console.WriteLine("You have successfully sent a request to follow {0}", userToFollow.Name);
             }
         }
 
-        public static void LoggedUser_UnFollowUser(string userName)
+        public static void AuthenticatedUser_UnFollowUser(string userName)
         {
-            var loggedUser = User.GetLoggedUser();
+            var authenticatedUser = User.GetAuthenticatedUser();
             var userToFollow = User.GetUserFromScreenName(userName);
 
-            if (loggedUser.UnFollowUser(userToFollow))
+            if (authenticatedUser.UnFollowUser(userToFollow))
             {
                 Console.WriteLine("You are not following {0} anymore", userToFollow.Name);
             }
         }
 
-        public static void LoggedUser_UpdateFollowAuthorizationsForUser(string userName)
+        public static void AuthenticatedUser_UpdateFollowAuthorizationsForUser(string userName)
         {
-            var loggedUser = User.GetLoggedUser();
+            var authenticatedUser = User.GetAuthenticatedUser();
             var userToFollow = User.GetUserFromScreenName(userName);
 
-            if (loggedUser.UpdateRelationshipAuthorizationsWith(userToFollow, false, false))
+            if (authenticatedUser.UpdateRelationshipAuthorizationsWith(userToFollow, false, false))
             {
                 Console.WriteLine("Authorizations updated");
             }
         }
 
-        public static void LoggedUser_GetLatestReceivedMessages()
+        public static void AuthenticatedUser_GetLatestReceivedMessages()
         {
-            var loggedUser = User.GetLoggedUser();
-            var messages = loggedUser.GetLatestMessagesReceived(20);
+            var authenticatedUser = User.GetAuthenticatedUser();
+            var messages = authenticatedUser.GetLatestMessagesReceived(20);
 
             Console.WriteLine("Messages Received : ");
             foreach (var message in messages)
@@ -760,10 +768,10 @@ namespace Examplinvi
             }
         }
 
-        public static void LoggedUser_GetLatestSentMessages()
+        public static void AuthenticatedUser_GetLatestSentMessages()
         {
-            var loggedUser = User.GetLoggedUser();
-            var messages = loggedUser.GetLatestMessagesSent(20);
+            var authenticatedUser = User.GetAuthenticatedUser();
+            var messages = authenticatedUser.GetLatestMessagesSent(20);
 
             Console.WriteLine("Messages Received : ");
             foreach (var message in messages)
@@ -772,13 +780,13 @@ namespace Examplinvi
             }
         }
 
-        public static void LoggedUser_GetAccountSettings()
+        public static void AuthenticatedUser_GetAccountSettings()
         {
-            var loggedUser = User.GetLoggedUser();
-            var settings = loggedUser.GetAccountSettings();
+            var authenticatedUser = User.GetAuthenticatedUser();
+            var settings = authenticatedUser.GetAccountSettings();
 
             // Store information
-            loggedUser.AccountSettings = settings;
+            authenticatedUser.AccountSettings = settings;
 
             Console.WriteLine("{0} uses lang : {1}", settings.ScreenName, settings.Language);
         }
@@ -800,9 +808,9 @@ namespace Examplinvi
 
         public static void Timeline_GetHomeTimeline()
         {
-            var loggedUser = User.GetLoggedUser();
+            var authenticatedUser = User.GetAuthenticatedUser();
 
-            var homeTimelineTweets = loggedUser.GetHomeTimeline();
+            var homeTimelineTweets = authenticatedUser.GetHomeTimeline();
             foreach (var tweet in homeTimelineTweets)
             {
                 Console.WriteLine(tweet.Text);
@@ -811,9 +819,9 @@ namespace Examplinvi
 
         public static void Timeline_GetMentionsTimeline()
         {
-            var loggedUser = User.GetLoggedUser();
+            var authenticatedUser = User.GetAuthenticatedUser();
 
-            var mentionsTimelineTweets = loggedUser.GetMentionsTimeline();
+            var mentionsTimelineTweets = authenticatedUser.GetMentionsTimeline();
             foreach (var mention in mentionsTimelineTweets)
             {
                 Console.WriteLine(mention.Text);
@@ -865,12 +873,12 @@ namespace Examplinvi
             stream.AddTrack("tweetinvi");
             stream.AddTrack("linvi");
 
-            stream.MatchingTweetAndLocationReceived += (sender, args) =>
+            stream.MatchingTweetReceived += (sender, args) =>
             {
                 var tweet = args.Tweet;
                 Console.WriteLine("{0} was detected between the following tracked locations:", tweet.Id);
 
-                IEnumerable<ILocation> matchingLocations = args.MatchedLocations;
+                IEnumerable<ILocation> matchingLocations = args.MatchingLocations;
                 foreach (var matchingLocation in matchingLocations)
                 {
                     Console.Write("({0}, {1}) ;", matchingLocation.Coordinate1.Latitude, matchingLocation.Coordinate1.Longitude);
@@ -901,10 +909,10 @@ namespace Examplinvi
             EventsRelatedWithBlock(userStream);
 
             // User Update
-            userStream.LoggedUserProfileUpdated += (sender, args) =>
+            userStream.AuthenticatedUserProfileUpdated += (sender, args) =>
             {
-                var newLoggedUser = args.LoggedUser;
-                Console.WriteLine("Logged user '{0}' has been updated!", newLoggedUser.Name);
+                var newAuthenticatedUser = args.AuthenticatedUser;
+                Console.WriteLine("Authenticated user '{0}' has been updated!", newAuthenticatedUser.Name);
             };
 
             // Friends the stream will analyze - A UserStream cannot analyze more than 10.000 people at the same time
@@ -960,8 +968,8 @@ namespace Examplinvi
             userStream.TweetFavouritedByMe += (sender, args) =>
             {
                 var tweet = args.Tweet;
-                var loggedUser = args.FavouritingUser;
-                Console.WriteLine("Logged User '{0}' favourited tweet '{1}'", loggedUser.Name, tweet.Id);
+                var authenticatedUser = args.FavouritingUser;
+                Console.WriteLine("Authenticated User '{0}' favourited tweet '{1}'", authenticatedUser.Name, tweet.Id);
             };
 
             userStream.TweetFavouritedByAnyoneButMe += (sender, args) =>
@@ -1010,14 +1018,14 @@ namespace Examplinvi
             };
 
             // User Added
-            userStream.LoggedUserAddedMemberToList += (sender, args) =>
+            userStream.AuthenticatedUserAddedMemberToList += (sender, args) =>
             {
                 var newUser = args.User;
                 var list = args.List;
                 Console.WriteLine("You added '{0}' to the list : '{1}'", newUser.Name, list.Name);
             };
 
-            userStream.LoggedUserAddedToListBy += (sender, args) =>
+            userStream.AuthenticatedUserAddedToListBy += (sender, args) =>
             {
                 var newUser = args.User;
                 var list = args.List;
@@ -1025,14 +1033,14 @@ namespace Examplinvi
             };
 
             // User Removed
-            userStream.LoggedUserRemovedMemberFromList += (sender, args) =>
+            userStream.AuthenticatedUserRemovedMemberFromList += (sender, args) =>
             {
                 var newUser = args.User;
                 var list = args.List;
                 Console.WriteLine("You removed '{0}' from the list : '{1}'", newUser.Name, list.Name);
             };
 
-            userStream.LoggedUserRemovedFromListBy += (sender, args) =>
+            userStream.AuthenticatedUserRemovedFromListBy += (sender, args) =>
             {
                 var newUser = args.User;
                 var list = args.List;
@@ -1040,7 +1048,7 @@ namespace Examplinvi
             };
 
             // User Subscribed
-            userStream.LoggedUserSubscribedToListCreatedBy += (sender, args) =>
+            userStream.AuthenticatedUserSubscribedToListCreatedBy += (sender, args) =>
             {
                 var list = args.List;
                 Console.WriteLine("You have subscribed to the list '{0}", list.Name);
@@ -1054,7 +1062,7 @@ namespace Examplinvi
             };
 
             // User Unsubscribed
-            userStream.LoggedUserUnsubscribedToListCreatedBy += (sender, args) =>
+            userStream.AuthenticatedUserUnsubscribedToListCreatedBy += (sender, args) =>
             {
                 var list = args.List;
                 Console.WriteLine("You have unsubscribed from the list '{0}'", list.Name);
@@ -1152,8 +1160,8 @@ namespace Examplinvi
 
         public static void SavedSearch_GetSavedSearches()
         {
-            var loggedUser = User.GetLoggedUser();
-            var savedSearches = loggedUser.GetSavedSearches();
+            var authenticatedUser = User.GetAuthenticatedUser();
+            var savedSearches = authenticatedUser.GetSavedSearches();
 
             Console.WriteLine("Saved Searches");
             foreach (var savedSearch in savedSearches)
@@ -1235,7 +1243,7 @@ namespace Examplinvi
 
         public static void TwitterList_GetUserOwnedLists()
         {
-            var user = User.GetLoggedUser();
+            var user = User.GetAuthenticatedUser();
             var ownedLists = TwitterList.GetUserOwnedLists(user);
 
             ownedLists.ForEach(list => Console.WriteLine("- {0}", list.FullName));
@@ -1243,7 +1251,7 @@ namespace Examplinvi
 
         public static void TwitterList_GetUserSubscribedLists()
         {
-            var currentUser = User.GetLoggedUser();
+            var currentUser = User.GetAuthenticatedUser();
             var lists = TwitterList.GetUserSubscribedLists(currentUser);
 
             lists.ForEach(list => Console.WriteLine("- {0}", list.FullName));
@@ -1311,8 +1319,8 @@ namespace Examplinvi
 
         public static void TwitterList_SubscribeOrUnsubscribeToList(long listId)
         {
-            var hasSuccessfullySubscribed = TwitterList.SubscribeLoggedUserToList(listId);
-            var hasUnsubscribed = TwitterList.UnSubscribeLoggedUserToList(listId);
+            var hasSuccessfullySubscribed = TwitterList.SubscribeAuthenticatedUserToList(listId);
+            var hasUnsubscribed = TwitterList.UnSubscribeAuthenticatedUserToList(listId);
         }
 
         public static void TwitterList_CheckUserSubscription(long userId, long listId)
@@ -1346,7 +1354,7 @@ namespace Examplinvi
         public static void RateLimits_Track_Examples()
         {
             // Enable Tweetinvi RateLimit Handler
-            RateLimit.RateLimitTrackerOption = RateLimitTrackerOptions.TrackAndAwait;
+            RateLimit.RateLimitTrackerMode = RateLimitTrackerMode.TrackAndAwait;
 
             // Get notified when your application is being stopped to wait for RateLimits to be available
             RateLimit.QueryAwaitingForRateLimit += (sender, args) =>
@@ -1495,9 +1503,9 @@ namespace Examplinvi
 
             if (uploader.Init(mediaType, binary.Length))
             {
-                if (uploader.Append(first))
+                if (uploader.Append(first, "media"))
                 {
-                    if (uploader.Append(second))
+                    if (uploader.Append(second, "media"))
                     {
                         return uploader.Complete();
                     }
@@ -1513,7 +1521,7 @@ namespace Examplinvi
 
         public static void Json_GetJsonForAccountRequestExample()
         {
-            string jsonResponse = AccountJson.GetLoggedUserSettingsJson();
+            string jsonResponse = AccountJson.GetAuthenticatedUserSettingsJson();
             Console.WriteLine(jsonResponse);
         }
 
@@ -1533,7 +1541,7 @@ namespace Examplinvi
 
         public static void Json_GetJsonForHelpRequestExample()
         {
-            var jsonResponse = HelpJson.GetTokenRateLimits();
+            var jsonResponse = HelpJson.GetCredentialsRateLimits();
             Console.WriteLine(jsonResponse);
         }
 
@@ -1562,8 +1570,8 @@ namespace Examplinvi
 
         public static void Json_GetJsonForUserRequestExample()
         {
-            var loggedUser = User.GetLoggedUser();
-            var jsonResponse = UserJson.GetFriendIds(loggedUser);
+            var authenticatedUser = User.GetAuthenticatedUser();
+            var jsonResponse = UserJson.GetFriendIds(authenticatedUser);
             Console.WriteLine(jsonResponse.ElementAt(0));
         }
 
@@ -1586,7 +1594,7 @@ namespace Examplinvi
         {
             Auth.Credentials = null;
 
-            var user = User.GetLoggedUser();
+            var user = User.GetAuthenticatedUser();
             if (user == null)
             {
                 var lastException = ExceptionHandler.GetLastException();
@@ -1618,13 +1626,14 @@ namespace Examplinvi
                 return;
             }
 
-            TweetinviConfig.CURRENT_PROXY_URL = "http://228.23.13.21:4287";
+            TweetinviConfig.CurrentThreadSettings.ProxyURL = "http://228.23.13.21:4287";
 
             // Configure a proxy with Proxy with username and password
-            TweetinviConfig.CURRENT_PROXY_URL = "http://user:pass@228.23.13.21:4287";
+            TweetinviConfig.CurrentThreadSettings.ProxyURL = "http://user:pass@228.23.13.21:4287";
 
-            TweetinviConfig.CURRENT_WEB_REQUEST_TIMEOUT = 5000;
-            TweetinviConfig.CURRENT_SHOW_DEBUG = false;
+            TweetinviConfig.CurrentThreadSettings.HttpRequestTimeout = 5000;
+
+            TweetinviConfig.CurrentThreadSettings.UploadTimeout = 90000;
         }
 
         public static void GlobalEvents()
@@ -1642,6 +1651,11 @@ namespace Examplinvi
             TweetinviEvents.QueryAfterExecute += (sender, args) =>
             {
                 Console.WriteLine("The query {0} has just been executed.", args.TwitterQuery);
+            };
+
+            TweetinviEvents.CurrentThreadEvents.QueryBeforeExecute += (sender, args) =>
+            {
+                Console.WriteLine("The query {0} is about to be executed in the main Thread.", args.TwitterQuery);
             };
         }
 

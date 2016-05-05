@@ -10,7 +10,6 @@ using Tweetinvi.Core.Interfaces.DTO;
 using Tweetinvi.Core.Interfaces.Factories;
 using Tweetinvi.Core.Interfaces.Models;
 using Tweetinvi.Core.Parameters;
-using Tweetinvi.Core.Parameters.QueryParameters;
 
 namespace Tweetinvi.Controllers.Tweet
 {
@@ -211,29 +210,49 @@ namespace Tweetinvi.Controllers.Tweet
             var tweetDTO = _tweetQueryExecutor.PublishRetweet(tweetId);
             return _tweetFactory.GenerateTweetFromDTO(tweetDTO);
         }
+        
+        // Publish UnRetweet
 
-        // Publish GetRetweets
-        public IEnumerable<ITweet> GetRetweets(ITweet tweet)
+        public ITweet UnRetweet(ITweetIdentifier tweet)
         {
-            if (tweet == null)
-            {
-                throw new ArgumentException("Tweet cannot be null!");
-            }
-
-            return GetRetweets(tweet.TweetDTO);
+            var tweetDTO = _tweetQueryExecutor.UnRetweet(tweet);
+            return _tweetFactory.GenerateTweetFromDTO(tweetDTO);
         }
 
-        public IEnumerable<ITweet> GetRetweets(ITweetDTO tweet)
+        public ITweet UnRetweet(long tweetId)
         {
-            var retweetsDTO = _tweetQueryExecutor.GetRetweets(tweet);
+            var tweetDTO = _tweetQueryExecutor.UnRetweet(tweetId);
+            return _tweetFactory.GenerateTweetFromDTO(tweetDTO);
+        }
+
+        #region GetRetweets
+
+        public IEnumerable<ITweet> GetRetweets(ITweetIdentifier tweetIdentifier, int maxRetweetsToRetrieve = 100)
+        {
+            var retweetsDTO = _tweetQueryExecutor.GetRetweets(tweetIdentifier, maxRetweetsToRetrieve);
             return _tweetFactory.GenerateTweetsFromDTO(retweetsDTO);
         }
 
-        public IEnumerable<ITweet> GetRetweets(long tweetId)
+        public IEnumerable<ITweet> GetRetweets(long tweetId, int maxRetweetsToRetrieve = 100)
         {
-            var retweetsDTO = _tweetQueryExecutor.GetRetweets(tweetId);
-            return _tweetFactory.GenerateTweetsFromDTO(retweetsDTO);
+            return GetRetweets(new TweetIdentifier(tweetId), maxRetweetsToRetrieve);
         }
+
+        #endregion
+
+        #region Get Retweeters Ids
+
+        public IEnumerable<long> GetRetweetersIds(long tweetId, int maxRetweetersToRetrieve = 100)
+        {
+            return _tweetQueryExecutor.GetRetweetersIds(new TweetIdentifier(tweetId), maxRetweetersToRetrieve);
+        }
+
+        public IEnumerable<long> GetRetweetersIds(ITweetIdentifier tweetIdentifier, int maxRetweetersToRetrieve = 100)
+        {
+            return _tweetQueryExecutor.GetRetweetersIds(tweetIdentifier, maxRetweetersToRetrieve);
+        }
+
+        #endregion
 
         // Destroy Tweet
         public bool DestroyTweet(ITweet tweet)
@@ -281,13 +300,13 @@ namespace Tweetinvi.Controllers.Tweet
             }
 
             // if the favourite operation failed the tweet should still be favourited if it previously was
-            tweetDTO.Favourited |= _tweetQueryExecutor.FavouriteTweet(tweetDTO);
-            return tweetDTO.Favourited;
+            tweetDTO.Favorited |= _tweetQueryExecutor.FavoriteTweet(tweetDTO);
+            return tweetDTO.Favorited;
         }
 
         public bool FavoriteTweet(long tweetId)
         {
-            return _tweetQueryExecutor.FavouriteTweet(tweetId);
+            return _tweetQueryExecutor.FavoriteTweet(tweetId);
         }
 
         // UnFavorite
@@ -303,12 +322,12 @@ namespace Tweetinvi.Controllers.Tweet
 
         public bool UnFavoriteTweet(ITweetDTO tweetDTO)
         {
-            return _tweetQueryExecutor.UnFavouriteTweet(tweetDTO);
+            return _tweetQueryExecutor.UnFavoriteTweet(tweetDTO);
         }
 
         public bool UnFavoriteTweet(long tweetId)
         {
-            return _tweetQueryExecutor.UnFavouriteTweet(tweetId);
+            return _tweetQueryExecutor.UnFavoriteTweet(tweetId);
         }
 
         // Generate OembedTweet

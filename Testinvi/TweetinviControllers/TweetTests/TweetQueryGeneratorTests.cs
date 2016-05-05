@@ -226,7 +226,7 @@ namespace Testinvi.TweetinviControllers.TweetTests
             var result = queryGenerator.GetPublishRetweetQuery(tweetToRetweet);
 
             // Assert
-            var expectedResult = String.Format(Resources.Tweet_Retweet_Publish, tweetToRetweetId);
+            var expectedResult = string.Format(Resources.Tweet_Retweet_Publish, tweetToRetweetId);
             Assert.AreEqual(result, expectedResult);
         }
 
@@ -241,7 +241,7 @@ namespace Testinvi.TweetinviControllers.TweetTests
             var result = queryGenerator.GetPublishRetweetQuery(tweetToRetweetId);
 
             // Assert
-            var expectedResult = String.Format(Resources.Tweet_Retweet_Publish, tweetToRetweetId);
+            var expectedResult = string.Format(Resources.Tweet_Retweet_Publish, tweetToRetweetId);
             Assert.AreEqual(result, expectedResult);
         }
 
@@ -250,55 +250,47 @@ namespace Testinvi.TweetinviControllers.TweetTests
         #region GetRetweetsQuery
 
         [TestMethod]
-        public void GetRetweetsQuery_RetweetingTweetUnpublished_ReturnsNull()
-        {
-            // Arrange
-            var queryGenerator = CreateTweetQueryGenerator();
-            var tweetToRetweet = A.Fake<ITweetDTO>();
-
-            _fakeTweetQueryValidator.CallsTo(x => x.IsTweetPublished(tweetToRetweet)).Returns(false);
-
-            // Act
-            var result = queryGenerator.GetRetweetsQuery(tweetToRetweet);
-
-            // Assert
-            Assert.AreEqual(result, null);
-        }
-
-        [TestMethod]
-        public void GetRetweetsQuery_RetweetingTweetPublished_ReturnsExpectedQuery()
+        public void GetRetweetsQuery_WithValidTweetDTO_ReturnsExpectedQuery()
         {
             // Arrange
             var queryGenerator = CreateTweetQueryGenerator();
             var tweetToRetweetId = TestHelper.GenerateRandomLong();
             var tweetToRetweet = A.Fake<ITweetDTO>();
+            var maxRetweetsToRetrieve = TestHelper.GenerateRandomInt();
             tweetToRetweet.CallsTo(x => x.Id).Returns(tweetToRetweetId);
 
             _fakeTweetQueryValidator.CallsTo(x => x.IsTweetPublished(tweetToRetweet)).Returns(true);
 
             // Act
-            var result = queryGenerator.GetRetweetsQuery(tweetToRetweet);
+            var result = queryGenerator.GetRetweetsQuery(tweetToRetweet, maxRetweetsToRetrieve);
 
             // Assert
-            var expectedResult = String.Format(Resources.Tweet_Retweet_GetRetweets, tweetToRetweetId);
+            var expectedResult = string.Format("https://api.twitter.com/1.1/statuses/retweets/{0}.json?count={1}", tweetToRetweetId, maxRetweetsToRetrieve);
+
             Assert.AreEqual(result, expectedResult);
         }
 
+        #endregion
+
+        #region Get Retweeter Ids Query
+
         [TestMethod]
-        public void GetRetweetsQuery_WithTweetId_ReturnsExpectedQuery()
+        public void GetRetweeterIdsQuery_WithInValidTweetIdentifier_ReturnsExpectedQuery()
         {
             // Arrange
             var queryGenerator = CreateTweetQueryGenerator();
-            var tweetToRetweetId = TestHelper.GenerateRandomLong();
+            var tweetIdentifier = A.Fake<ITweetIdentifier>();
+            var maxRetweetersToRetrieve = TestHelper.GenerateRandomInt();
+            _fakeTweetQueryValidator.CallsTo(x => x.IsValidTweetIdentifier(tweetIdentifier)).Returns(true);
 
             // Act
-            var result = queryGenerator.GetRetweetsQuery(tweetToRetweetId);
+            var result = queryGenerator.GetRetweeterIdsQuery(tweetIdentifier, maxRetweetersToRetrieve);
 
             // Assert
-            var expectedResult = String.Format(Resources.Tweet_Retweet_GetRetweets, tweetToRetweetId);
+            var expectedResult = string.Format("https://api.twitter.com/1.1/statuses/retweeters/ids.json?id={0}&count={1}", tweetIdentifier.Id, maxRetweetersToRetrieve);
             Assert.AreEqual(result, expectedResult);
         }
-
+        
         #endregion
 
         #region GetDestroyTweetQuery
@@ -334,7 +326,7 @@ namespace Testinvi.TweetinviControllers.TweetTests
             var result = queryGenerator.GetDestroyTweetQuery(tweetToDestroy);
 
             // Assert
-            var expectedResult = String.Format(Resources.Tweet_Destroy, tweetToDestroyId);
+            var expectedResult = string.Format(Resources.Tweet_Destroy, tweetToDestroyId);
             Assert.AreEqual(result, expectedResult);
         }
 
@@ -349,7 +341,7 @@ namespace Testinvi.TweetinviControllers.TweetTests
             var result = queryGenerator.GetDestroyTweetQuery(tweetToDestroyId);
 
             // Assert
-            var expectedResult = String.Format(Resources.Tweet_Destroy, tweetToDestroyId);
+            var expectedResult = string.Format(Resources.Tweet_Destroy, tweetToDestroyId);
             Assert.AreEqual(result, expectedResult);
         }
 
@@ -367,7 +359,7 @@ namespace Testinvi.TweetinviControllers.TweetTests
             _fakeTweetQueryValidator.CallsTo(x => x.IsTweetPublished(tweetToRetweet)).Returns(false);
 
             // Act
-            var result = queryGenerator.GetFavouriteTweetQuery(tweetToRetweet);
+            var result = queryGenerator.GetFavoriteTweetQuery(tweetToRetweet);
 
             // Assert
             Assert.AreEqual(result, null);
@@ -385,10 +377,10 @@ namespace Testinvi.TweetinviControllers.TweetTests
             _fakeTweetQueryValidator.CallsTo(x => x.IsTweetPublished(tweetToFavourite)).Returns(true);
 
             // Act
-            var result = queryGenerator.GetFavouriteTweetQuery(tweetToFavourite);
+            var result = queryGenerator.GetFavoriteTweetQuery(tweetToFavourite);
 
             // Assert
-            var expectedResult = String.Format(Resources.Tweet_Favorite_Create, tweetToFavouriteId);
+            var expectedResult = string.Format(Resources.Tweet_Favorite_Create, tweetToFavouriteId);
             Assert.AreEqual(result, expectedResult);
         }
 
@@ -400,16 +392,16 @@ namespace Testinvi.TweetinviControllers.TweetTests
             var tweetToFavouriteId = TestHelper.GenerateRandomLong();
 
             // Act
-            var result = queryGenerator.GetFavouriteTweetQuery(tweetToFavouriteId);
+            var result = queryGenerator.GetFavoriteTweetQuery(tweetToFavouriteId);
 
             // Assert
-            var expectedResult = String.Format(Resources.Tweet_Favorite_Create, tweetToFavouriteId);
+            var expectedResult = string.Format(Resources.Tweet_Favorite_Create, tweetToFavouriteId);
             Assert.AreEqual(result, expectedResult);
         }
 
         #endregion
 
-        #region GetUnFavouriteTweetQuery
+        #region GetUnFavoriteTweetQuery
 
         [TestMethod]
         public void GetUnFavouriteTweetQuery_TweetNotPublished_ReturnsNull()
@@ -421,7 +413,7 @@ namespace Testinvi.TweetinviControllers.TweetTests
             _fakeTweetQueryValidator.CallsTo(x => x.IsTweetPublished(tweetToRetweet)).Returns(false);
 
             // Act
-            var result = queryGenerator.GetUnFavouriteTweetQuery(tweetToRetweet);
+            var result = queryGenerator.GetUnFavoriteTweetQuery(tweetToRetweet);
 
             // Assert
             Assert.AreEqual(result, null);
@@ -439,10 +431,10 @@ namespace Testinvi.TweetinviControllers.TweetTests
             _fakeTweetQueryValidator.CallsTo(x => x.IsTweetPublished(tweetToUnFavourite)).Returns(true);
 
             // Act
-            var result = queryGenerator.GetUnFavouriteTweetQuery(tweetToUnFavourite);
+            var result = queryGenerator.GetUnFavoriteTweetQuery(tweetToUnFavourite);
 
             // Assert
-            var expectedResult = String.Format(Resources.Tweet_Favorite_Destroy, tweetToUnFavouriteId);
+            var expectedResult = string.Format(Resources.Tweet_Favorite_Destroy, tweetToUnFavouriteId);
             Assert.AreEqual(result, expectedResult);
         }
 
@@ -454,10 +446,10 @@ namespace Testinvi.TweetinviControllers.TweetTests
             var tweetToUnFavouriteId = TestHelper.GenerateRandomLong();
 
             // Act
-            var result = queryGenerator.GetUnFavouriteTweetQuery(tweetToUnFavouriteId);
+            var result = queryGenerator.GetUnFavoriteTweetQuery(tweetToUnFavouriteId);
 
             // Assert
-            var expectedResult = String.Format(Resources.Tweet_Favorite_Destroy, tweetToUnFavouriteId);
+            var expectedResult = string.Format(Resources.Tweet_Favorite_Destroy, tweetToUnFavouriteId);
             Assert.AreEqual(result, expectedResult);
         }
 
@@ -496,7 +488,7 @@ namespace Testinvi.TweetinviControllers.TweetTests
             var result = queryGenerator.GetGenerateOEmbedTweetQuery(tweet);
 
             // Assert
-            var expectedResult = String.Format(Resources.Tweet_GenerateOEmbed, tweetId);
+            var expectedResult = string.Format(Resources.Tweet_GenerateOEmbed, tweetId);
             Assert.AreEqual(result, expectedResult);
         }
 
@@ -511,7 +503,7 @@ namespace Testinvi.TweetinviControllers.TweetTests
             var result = queryGenerator.GetGenerateOEmbedTweetQuery(tweetToRetweetId);
 
             // Assert
-            var expectedResult = String.Format(Resources.Tweet_GenerateOEmbed, tweetToRetweetId);
+            var expectedResult = string.Format(Resources.Tweet_GenerateOEmbed, tweetToRetweetId);
             Assert.AreEqual(result, expectedResult);
         }
 
@@ -575,12 +567,12 @@ namespace Testinvi.TweetinviControllers.TweetTests
 
         private string GeneratePlaceIdParameter()
         {
-            return String.Format("&{0}", _expectedPlaceIdParameter);
+            return string.Format("&{0}", _expectedPlaceIdParameter);
         }
 
         private string GenerateCoordinatesParameter()
         {
-            return String.Format("&{0}", _expectedCoordinatesParameter);
+            return string.Format("&{0}", _expectedCoordinatesParameter);
         }
 
         public TweetQueryGenerator CreateTweetQueryGenerator()

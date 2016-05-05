@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using Tweetinvi.Core.Credentials;
+using Tweetinvi.Core.Authentication;
 using Tweetinvi.Core.Enum;
 using Tweetinvi.Core.Interfaces;
 using Tweetinvi.Core.Interfaces.Controllers;
 using Tweetinvi.Core.Interfaces.DTO;
 using Tweetinvi.Core.Interfaces.Factories;
 using Tweetinvi.Core.Interfaces.Models;
+using Tweetinvi.Core.Parameters;
 
 namespace Tweetinvi
 {
@@ -83,14 +84,9 @@ namespace Tweetinvi
 
         #region User Factory
 
-        public static ILoggedUser GetLoggedUser()
+        public static IAuthenticatedUser GetAuthenticatedUser(ITwitterCredentials credentials = null, IGetAuthenticatedUserParameters parameters = null)
         {
-            return UserFactory.GetLoggedUser();
-        }
-
-        public static ILoggedUser GetLoggedUser(ITwitterCredentials credentials)
-        {
-            return UserFactory.GetLoggedUser(credentials);
+            return UserFactory.GetAuthenticatedUser(credentials, parameters);
         }
 
         public static IUser GetUserFromId(long userId)
@@ -225,24 +221,20 @@ namespace Tweetinvi
         }
 
         // Favourites
-        public static IEnumerable<ITweet> GetFavouriteTweets(IUser user, int maxFavouriteTweetsToRetrieve = 40)
+
+        public static IEnumerable<ITweet> GetFavoriteTweets(IUserIdentifier userIdentifier, IGetUserFavoritesParameters parameters = null)
         {
-            return UserController.GetFavouriteTweets(user, maxFavouriteTweetsToRetrieve);
+            return UserController.GetFavoriteTweets(userIdentifier, parameters);
         }
 
-        public static IEnumerable<ITweet> GetFavouriteTweets(IUserIdentifier userDTO, int maxFavouriteTweetsToRetrieve = 40)
+        public static IEnumerable<ITweet> GetFavoriteTweets(long userId, IGetUserFavoritesParameters parameters = null)
         {
-            return UserController.GetFavouriteTweets(userDTO, maxFavouriteTweetsToRetrieve);
+            return UserController.GetFavoriteTweets(new UserIdentifier(userId), parameters);
         }
 
-        public static IEnumerable<ITweet> GetFavouriteTweets(long userId, int maxFavouriteTweetsToRetrieve = 40)
+        public static IEnumerable<ITweet> GetFavoriteTweets(string userScreenName, IGetUserFavoritesParameters parameters = null)
         {
-            return UserController.GetFavouriteTweets(userId, maxFavouriteTweetsToRetrieve);
-        }
-
-        public static IEnumerable<ITweet> GetFavouriteTweets(string userScreenName, int maxFavouriteTweetsToRetrieve = 40)
-        {
-            return UserController.GetFavouriteTweets(userScreenName, maxFavouriteTweetsToRetrieve);
+            return UserController.GetFavoriteTweets(new UserIdentifier(userScreenName), parameters);
         }
 
         // Block User

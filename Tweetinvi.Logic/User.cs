@@ -12,6 +12,7 @@ using Tweetinvi.Core.Interfaces.DTO;
 using Tweetinvi.Core.Interfaces.Models;
 using Tweetinvi.Core.Interfaces.Models.Entities;
 using Tweetinvi.Core.Parameters;
+using Tweetinvi.Core.Parameters.QueryParameters;
 
 namespace Tweetinvi.Logic
 {
@@ -195,7 +196,7 @@ namespace Tweetinvi.Logic
 
         public int FavouritesCount
         {
-            get { return _userDTO.FavouritesCount ?? 0; }
+            get { return _userDTO.FavoritesCount ?? 0; }
         }
 
         public int ListedCount
@@ -376,16 +377,21 @@ namespace Tweetinvi.Logic
         // Favorites
         public virtual IEnumerable<ITweet> GetFavorites(int maximumNumberOfTweets = 40)
         {
-            return _userController.GetFavouriteTweets(_userDTO, maximumNumberOfTweets);
+            return _userController.GetFavoriteTweets(this, new GetUserFavoritesParameters { MaximumNumberOfTweetsToRetrieve =  maximumNumberOfTweets});
+        }
+
+        public IEnumerable<ITweet> GetFavorites(IGetUserFavoritesParameters parameters)
+        {
+            return _userController.GetFavoriteTweets(this, parameters);
         }
 
         // Lists
-        public IEnumerable<ITwitterList> GetSubscribedLists(int maximumNumberOfListsToRetrieve = TweetinviConsts.TWITTER_LIST_GET_USER_SUBSCRIPTIONS_COUNT)
+        public IEnumerable<ITwitterList> GetSubscribedLists(int maximumNumberOfListsToRetrieve = TweetinviConsts.LIST_GET_USER_SUBSCRIPTIONS_COUNT)
         {
             return _twitterListController.GetUserSubscribedLists(this, maximumNumberOfListsToRetrieve);
         }
 
-        public IEnumerable<ITwitterList> GetOwnedLists(int maximumNumberOfListsToRetrieve = TweetinviConsts.TWITTER_LIST_OWNED_COUNT)
+        public IEnumerable<ITwitterList> GetOwnedLists(int maximumNumberOfListsToRetrieve = TweetinviConsts.LIST_OWNED_COUNT)
         {
             return _twitterListController.GetUserOwnedLists(this, maximumNumberOfListsToRetrieve);
         }

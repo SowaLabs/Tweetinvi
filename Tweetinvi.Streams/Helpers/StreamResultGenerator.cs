@@ -34,7 +34,7 @@ namespace Tweetinvi.Streams.Helpers
 
         private bool IsRunning
         {
-            get { return StreamState == StreamState.Resume || StreamState == StreamState.Pause; }
+            get { return StreamState == StreamState.Running || StreamState == StreamState.Pause; }
         }
 
         public StreamState StreamState
@@ -90,7 +90,7 @@ namespace Tweetinvi.Streams.Helpers
             await TaskEx.Run(() =>
             {
                 streamTask.Start();
-            });
+            }).ConfigureAwait(false);
         }
 
         private void StreamTaskStarted(object sender, EventArgs eventArgs)
@@ -103,7 +103,7 @@ namespace Tweetinvi.Streams.Helpers
             var streamState = args.Value;
             switch (streamState)
             {
-                case StreamState.Resume:
+                case StreamState.Running:
                     this.Raise(StreamResumed);
                     break;
                 case StreamState.Pause:
@@ -157,19 +157,22 @@ namespace Tweetinvi.Streams.Helpers
         {
             lock (_lockStream)
             {
-                StopStreamAndUnsubscribeFromEvents();
-
-                if (exception is ITwitterTimeoutException && disconnectMessage == null)
+                if (StreamState != StreamState.Stop)
                 {
-                    disconnectMessage = new DisconnectMessage
-                    {
-                        Code = 503,
-                        Reason = "Timeout"
-                    };
-                }
+                    StopStreamAndUnsubscribeFromEvents();
 
-                var streamExceptionEventArgs = new StreamExceptionEventArgs(exception, disconnectMessage);
-                this.Raise(StreamStopped, streamExceptionEventArgs);
+                    if (exception is ITwitterTimeoutException && disconnectMessage == null)
+                    {
+                        disconnectMessage = new DisconnectMessage
+                        {
+                            Code = 503,
+                            Reason = "Timeout"
+                        };
+                    }
+
+                    var streamExceptionEventArgs = new StreamExceptionEventArgs(exception, disconnectMessage);
+                    this.Raise(StreamStopped, streamExceptionEventArgs);
+                }
             }
         }
 

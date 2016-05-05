@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Tweetinvi.Core.Credentials;
+using Tweetinvi.Core.Authentication;
 using Tweetinvi.Core.Helpers;
 using Tweetinvi.Core.Injectinvi;
 using Tweetinvi.Core.Interfaces;
@@ -8,7 +8,6 @@ using Tweetinvi.Core.Interfaces.Credentials;
 using Tweetinvi.Core.Interfaces.DTO;
 using Tweetinvi.Core.Interfaces.Factories;
 using Tweetinvi.Core.Interfaces.Models;
-using Tweetinvi.Core.Interfaces.WebLogic;
 using Tweetinvi.Core.Parameters;
 
 namespace Tweetinvi.Factories.User
@@ -16,43 +15,51 @@ namespace Tweetinvi.Factories.User
     public class UserFactory : IUserFactory
     {
         private readonly IUserFactoryQueryExecutor _userFactoryQueryExecutor;
-        private readonly IFactory<ILoggedUser> _loggedUserUnityFactory;
+        private readonly IFactory<IAuthenticatedUser> _authenticatedUserUnityFactory;
         private readonly IFactory<IUser> _userUnityFactory;
         private readonly IJsonObjectConverter _jsonObjectConverter;
         private readonly ICredentialsAccessor _credentialsAccessor;
 
         public UserFactory(
             IUserFactoryQueryExecutor userFactoryQueryExecutor,
-            IFactory<ILoggedUser> loggedUserUnityFactory,
+            IFactory<IAuthenticatedUser> authenticatedUserUnityFactory,
             IFactory<IUser> userUnityFactory,
             IJsonObjectConverter jsonObjectConverter,
             ICredentialsAccessor credentialsAccessor)
         {
             _userFactoryQueryExecutor = userFactoryQueryExecutor;
-            _loggedUserUnityFactory = loggedUserUnityFactory;
+            _authenticatedUserUnityFactory = authenticatedUserUnityFactory;
             _userUnityFactory = userUnityFactory;
             _jsonObjectConverter = jsonObjectConverter;
             _credentialsAccessor = credentialsAccessor;
         }
 
         // Get User
-        public ILoggedUser GetLoggedUser()
+        public IAuthenticatedUser GetAuthenticatedUser(ITwitterCredentials credentials = null, IGetAuthenticatedUserParameters parameters = null)
         {
-            var userDTO = _userFactoryQueryExecutor.GetLoggedUser();
-            return GenerateLoggedUserFromDTO(userDTO);
-        }
+            IUserDTO userDTO;
 
-        public ILoggedUser GetLoggedUser(ITwitterCredentials credentials)
-        {
-            var userDTO = _credentialsAccessor.ExecuteOperationWithCredentials(credentials, () =>
+            if (credentials == null)
             {
-                return _userFactoryQueryExecutor.GetLoggedUser();
-            });
+                credentials = _credentialsAccessor.CurrentThreadCredentials;
+                userDTO = _userFactoryQueryExecutor.GetAuthenticatedUser(parameters);
+            }
+            else
+            {
+                userDTO = _credentialsAccessor.ExecuteOperationWithCredentials(credentials, () =>
+                {
+                    return _userFactoryQueryExecutor.GetAuthenticatedUser(parameters);
+                });
+            }
 
-            var loggedUser = GenerateLoggedUserFromDTO(userDTO);
-            loggedUser.SetCredentials(credentials);
+            var authenticatedUser = GenerateAuthenticatedUserFromDTO(userDTO);
 
-            return loggedUser;
+            if (authenticatedUser != null)
+            {
+                authenticatedUser.SetCredentials(credentials);
+            }
+
+            return authenticatedUser;
         }
 
         public IUser GetUserFromId(long userId)
@@ -98,15 +105,15 @@ namespace Tweetinvi.Factories.User
         }
 
         // Generate from DTO
-        public ILoggedUser GenerateLoggedUserFromDTO(IUserDTO userDTO)
+        public IAuthenticatedUser GenerateAuthenticatedUserFromDTO(IUserDTO userDTO)
         {
             if (userDTO == null)
             {
                 return null;
             }
 
-            var userDTOParameterOverride = _loggedUserUnityFactory.GenerateParameterOverrideWrapper("userDTO", userDTO);
-            var user = _loggedUserUnityFactory.Create(userDTOParameterOverride);
+            var userDTOParameterOverride = _authenticatedUserUnityFactory.GenerateParameterOverrideWrapper("userDTO", userDTO);
+            var user = _authenticatedUserUnityFactory.Create(userDTOParameterOverride);
 
             return user;
         }

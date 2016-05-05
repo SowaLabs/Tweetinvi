@@ -90,7 +90,10 @@ namespace Tweetinvi.Core.Extensions
                     continue;
                 }
 
-                length = length - link.Value.Length + 23;
+                var isHttps = link.Groups["isSecured"].Value == "s";
+                var linkSize = isHttps ? TweetinviConsts.HTTPS_LINK_SIZE : TweetinviConsts.HTTP_LINK_SIZE;
+                
+                length = length - link.Value.Length + linkSize;
             }
 
             if (willBePublishedWithMedia)
@@ -209,8 +212,8 @@ namespace Tweetinvi.Core.Extensions
         /// </summary>
         public static string CleanForRegexGroupName(this string groupName)
         {
-            string res = Regex.Replace(groupName, @"^[^a-zA-Z]", match => String.Format("special{0}", (int)match.Value[0]));
-            return Regex.Replace(res, @"[^a-zA-Z0-9]", match => String.Format("special{0}", (int)match.Value[0]));
+            string res = Regex.Replace(groupName, @"^[^a-zA-Z]", match => string.Format("special{0}", (int)match.Value[0]));
+            return Regex.Replace(res, @"[^a-zA-Z0-9]", match => string.Format("special{0}", (int)match.Value[0]));
         }
 
         /// <summary>
@@ -218,7 +221,7 @@ namespace Tweetinvi.Core.Extensions
         /// </summary>
         public static string CleanForRegex(this string regexKeyword)
         {
-            return Regex.Replace(regexKeyword, @"[.^$*+?()[{\|#]", match => String.Format(@"\{0}", match));
+            return Regex.Replace(regexKeyword, @"[.^$*+?()[{\|#]", match => string.Format(@"\{0}", match));
         }
 
         /// <summary>
@@ -230,7 +233,7 @@ namespace Tweetinvi.Core.Extensions
             StringBuilder patternBuilder = new StringBuilder();
             foreach (var keywordPattern in keywords)
             {
-                patternBuilder.Append(String.Format(@"(?=.*(?<{0}>(?:^|\s+){1}(?:\s+|$)))?",
+                patternBuilder.Append(string.Format(@"(?=.*(?<{0}>(?:^|\s+){1}(?:\s+|$)))?",
                    CleanForRegexGroupName(keywordPattern), CleanForRegex(keywordPattern)));
             }
 
@@ -251,6 +254,9 @@ namespace Tweetinvi.Core.Extensions
             return s[s.Length - 1];
         }
 
+        /// <summary>
+        /// IMPORTANT! Add the parameters as LOWERED
+        /// </summary>
         public static void AddParameterToQuery(this StringBuilder queryBuilder, string parameterName, string parameterValue)
         {
             if (string.IsNullOrEmpty(parameterValue))
@@ -270,9 +276,34 @@ namespace Tweetinvi.Core.Extensions
                 queryBuilder.Append("?");
             }
 
-            queryBuilder.Append(string.Format("{0}={1}", parameterName, parameterValue));
+            queryBuilder.Append(string.Format("{0}={1}", parameterName, parameterValue.ToLowerInvariant()));
         }
 
+        public static void AddFormattedParameterToQuery(this StringBuilder queryBuilder, string parameter)
+        {
+            if (string.IsNullOrEmpty(parameter))
+            {
+                return;
+            }
+
+            var query = queryBuilder.ToString();
+
+            if (query.Contains("?") && query[query.Length - 1] != '?' && query[query.Length - 1] != '&')
+            {
+                queryBuilder.Append("&");
+            }
+
+            if (!query.Contains("?"))
+            {
+                queryBuilder.Append("?");
+            }
+
+            queryBuilder.Append(parameter);
+        }
+
+        /// <summary>
+        /// IMPORTANT! Add the parameters as LOWERED
+        /// </summary>
         public static void AddParameterToQuery<T>(this StringBuilder queryBuilder, string parameterName, T parameterValue)
         {
             if (parameterValue == null)
@@ -308,12 +339,20 @@ namespace Tweetinvi.Core.Extensions
                     stringValue = ((double) (object) parameterValue).ToString(CultureInfo.InvariantCulture);
                 }
 
-                AddParameterToQuery(queryBuilder, parameterName, stringValue);
+                AddParameterToQuery(queryBuilder, parameterName, stringValue.ToLowerInvariant());
             }
         }
 
+        /// <summary>
+        /// IMPORTANT! Add the parameters as is and not LOWERED
+        /// </summary>
         public static string AddParameterToQuery(this string query, string parameterName, string parameterValue)
         {
+            if (parameterValue == null)
+            {
+                return query;
+            }
+
             if (query.Contains("?") && query[query.Length - 1] != '?' && query[query.Length - 1] != '&')
             {
                 query += "&";

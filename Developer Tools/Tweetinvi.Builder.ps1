@@ -1,12 +1,13 @@
 Param(
-	$v = '0.9.10.2',			 # Version number
+	$v = '0.9.12.2',			 # Version number
 	$m = 'Release',              # Visual Studio Build Mode
 	[Switch]$dnr,				 # Do Not Rebuild 
 	[Switch]$h,					 # Help
 	[Switch]$help,				 # Help
 	[Switch]$iel,				 # Include External Libraries	
 	[Switch]$uv,				 # Update Version Only
-	[Switch]$nugetMultipleDLLs   # Add non merged DLLs to nuget folders
+	[Switch]$nugetMultipleDLLs,  # Add non merged DLLs to nuget folders
+	[Switch]$b 					 # Build only
 );
 
 $version = $v;
@@ -23,7 +24,7 @@ if ($h.IsPresent -or $help.IsPresent) {
 	Write-Host '-uv   : Only update assemblies'' versions.'
 	Write-Host '-v    : Set the version of the assemblies and build (default:' $v').';
 	Write-Host ''
-	Write-Host 'NUGET Argumements'
+	Write-Host 'NUGET Arguments'
 	Write-Host '-nugetMultipleDLLs : Use multiple binaries instead of a merged one.'
 	Write-Host
 	return;
@@ -97,8 +98,11 @@ $additionalAssemblies =
 
 $replaceNugetVersionRegex = '<version>[0-9\.]*</version>';
 $replaceNugetVersionWith = '<version>' + $version + '</version>';
+$replaceNugetReleaseNotesRegex = '<releaseNotes>https://github.com/linvi/tweetinvi/releases/tag/[0-9\.]*</releaseNotes>';
+$replaceNugetReleaseNotesWith = '<releaseNotes>https://github.com/linvi/tweetinvi/releases/tag/' + $version + '</releaseNotes>';
 
 Get-Item 'TweetinviAPI\TweetinviAPI.nuspec' | .\Replace-Regex.ps1 -Pattern $replaceNugetVersionRegex -Replacement $replaceNugetVersionWith -overwrite
+Get-Item 'TweetinviAPI\TweetinviAPI.nuspec' | .\Replace-Regex.ps1 -Pattern $replaceNugetReleaseNotesRegex -Replacement $replaceNugetReleaseNotesWith -overwrite
 
 for ($i=0; $i -lt $projects.length; $i++)
 {
@@ -127,6 +131,13 @@ if (!$uv.IsPresent) {
 	$p = Start-Process -Filepath '.\nuget.exe' -ArgumentList 'restore ../' -PassThru -NoNewWindow;
 	$null = $p.WaitForExit(-1);
 
+	# Remove previous binaries
+	$examplinviBin = $rootPath + $examplinvi + '\bin\' + $releaseMode
+	
+	if (Test-Path $examplinviBin) {
+		rmdir -r $examplinviBin
+	}
+	
 	# Build solution
 
     if (!$dnr.IsPresent)
@@ -145,10 +156,12 @@ if (!$uv.IsPresent) {
 	}
 
 	# Move dll into temporary folder
-	$examplinviBin = $rootPath + $examplinvi + '\bin\' + $releaseMode
-
 	Get-ChildItem -LiteralPath $examplinviBin -filter *.dll  | % { Copy-Item $_.fullname $temporaryFolder }
 
+	if ($b.IsPresent) {
+		Exit;
+	}
+	
 	# Ensure the nuget folders have been created
 	mkdir $net40Folder -Force | Out-Null
 	mkdir $net45Folder -Force | Out-Null
@@ -161,17 +174,7 @@ if (!$uv.IsPresent) {
 	rm -Force ($net40PortableFolder + '\*');
 	rm -Force ($net45PortableFolder + '\*');
 
-	# Add .dll into nuget folders
-
-	if ($nugetMultipleDLLs.IsPresent)
-	{
-		Get-ChildItem -LiteralPath $examplinviBin -filter Tweetinvi*.dll  | % { Copy-Item $_.fullname $net40Folder }
-		Get-ChildItem -LiteralPath $examplinviBin -filter Tweetinvi*.dll  | % { Copy-Item $_.fullname $net45Folder }
-		Get-ChildItem -LiteralPath $examplinviBin -filter Tweetinvi*.dll  | % { Copy-Item $_.fullname $net40PortableFolder }
-		Get-ChildItem -LiteralPath $examplinviBin -filter Tweetinvi*.dll  | % { Copy-Item $_.fullname $net45PortableFolder }
-	}
-
-	Copy-Item $rootPath$examplinvi\Program.cs $temporaryFolder\Cheatsheet.cs
+    Copy-Item $rootPath$examplinvi\Program.cs $temporaryFolder\Cheatsheet.cs
 
 	# Create Merged assembly
 
@@ -179,7 +182,7 @@ if (!$uv.IsPresent) {
     mkdir $outputFolder -Force | Out-Null
 
 	$mergedDLLPath = $temporaryFolder + '\output\' + $tweetinviAPIMerged
-	$ILMergeCommand = '.\ILMerge.exe /target:library /out:' + $mergedDLLPath + ' '
+	$ILMergeCommand = '.\ILMerge.exe /target:library /out:' + $mergedDLLPath + ' /keyfile:../tweetinvi.snk '
 
     if ($iel.IsPresent)
     {
@@ -198,8 +201,19 @@ if (!$uv.IsPresent) {
 	Write-Host $ILMergeCommand
 	Invoke-Expression $ILMergeCommand
 
-	# Move Merged DLL into Nuget folder
+	if ($nugetMultipleDLLs.IsPresent)
+	{
+        # Copy *.dll into nuget folders
+		Get-ChildItem -LiteralPath $examplinviBin -filter Tweetinvi*.dll  | % { Copy-Item $_.fullname $net40Folder }
+		Get-ChildItem -LiteralPath $examplinviBin -filter Tweetinvi*.dll  | % { Copy-Item $_.fullname $net45Folder }
+		Get-ChildItem -LiteralPath $examplinviBin -filter Tweetinvi*.dll  | % { Copy-Item $_.fullname $net40PortableFolder }
+		Get-ChildItem -LiteralPath $examplinviBin -filter Tweetinvi*.dll  | % { Copy-Item $_.fullname $net45PortableFolder }
+	}
+
+	
 	if (!$nugetMultipleDLLs.IsPresent) {
+        # Copy Merged DLL into Nuget folder
+
 		Write-Host 'Copying merged DLL into nuget...' 
 		Write-Host $mergedDLLPath;
 
@@ -208,7 +222,8 @@ if (!$uv.IsPresent) {
 		Copy-Item $mergedDLLPath ($net40Folder + '\Tweetinvi.dll');
 		Copy-Item $mergedDLLPath ($net45Folder + '\Tweetinvi.dll');
 		Copy-Item $mergedDLLPath ($net40PortableFolder + '\Tweetinvi.dll');
-		Copy-Item $mergedDLLPath ($net45PortableFolder + '\Tweetinvi.dll');
+
+		Get-ChildItem -LiteralPath $temporaryFolder -filter Tweetinvi*.dll  | % { Copy-Item $_.fullname $net45PortableFolder }
 	}
 
 	# Create Zip files

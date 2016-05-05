@@ -31,7 +31,7 @@ namespace Tweetinvi
             }
         }
 
-        [ThreadStatic] 
+        [ThreadStatic]
         private static IFriendshipController _friendshipController;
         private static IFriendshipController FriendshipController
         {
@@ -60,7 +60,7 @@ namespace Tweetinvi
             _accountController = TweetinviContainer.Resolve<IAccountController>();
             _friendshipController = TweetinviContainer.Resolve<IFriendshipController>();
         }
-        
+
         // Settings
 
         /// <summary>
@@ -68,7 +68,7 @@ namespace Tweetinvi
         /// </summary>
         public static IAccountSettings GetCurrentAccountSettings()
         {
-            return AccountController.GetLoggedUserSettings();
+            return AccountController.GetAuthenticatedUserSettings();
         }
 
         /// <summary>
@@ -82,7 +82,7 @@ namespace Tweetinvi
             int? startSleepTime = null,
             int? endSleepTime = null)
         {
-            return AccountController.UpdateLoggedUserSettings(
+            return AccountController.UpdateAuthenticatedUserSettings(
                 languages,
                 timeZone,
                 trendLocationWoeid,
@@ -96,7 +96,7 @@ namespace Tweetinvi
         /// </summary>
         public static IAccountSettings UpdateAccountSettings(IAccountSettingsRequestParameters settings)
         {
-            return AccountController.UpdateLoggedUserSettings(settings);
+            return AccountController.UpdateAuthenticatedUserSettings(settings);
         }
 
         /// <summary>
@@ -132,6 +132,82 @@ namespace Tweetinvi
             }
 
             return accountSettingsParameter;
+        }
+
+        // Profile
+
+        /// <summary>
+        /// Update the information of the authenticated user profile.
+        /// </summary>
+        public static IAuthenticatedUser UpdateAccountProfile(IAccountUpdateProfileParameters parameters)
+        {
+            return AccountController.UpdateAccountProfile(parameters);
+        }
+
+        /// <summary>
+        /// Updates the authenticated user’s profile image. 
+        /// </summary>
+        /// <param name="imageBinary">Must be a valid GIF, JPG, or PNG image of less than 800 kilobytes in size. Images with width larger than 2048 pixels will be forcibly scaled down.</param>
+        public static bool UpdateProfileImage(byte[] imageBinary)
+        {
+            return AccountController.UpdateProfileImage(imageBinary);
+        }
+
+        /// <summary>
+        /// Updates the authenticated user’s profile image. 
+        /// </summary>
+        /// <param name="parameters">The parameters must contain a valid GIF, JPG, or PNG image of less than 800 kilobytes in size. Images with width larger than 2048 pixels will be forcibly scaled down.</param>
+        public static bool UpdateProfileImage(IAccountUpdateProfileImageParameters parameters)
+        {
+            return AccountController.UpdateProfileImage(parameters);
+        }
+
+        /// <summary>
+        /// Uploads a profile banner on behalf of the authenticated user.
+        /// </summary>
+        public static bool UpdateProfileBanner(byte[] imageBinary)
+        {
+            return AccountController.UpdateProfileBanner(imageBinary);
+        }
+
+        /// <summary>
+        /// Uploads a profile banner on behalf of the authenticated user.
+        /// </summary>
+        public static bool UpdateProfileBanner(IAccountUpdateProfileBannerParameters parameters)
+        {
+            return AccountController.UpdateProfileBanner(parameters);
+        }
+
+        /// <summary>
+        /// Removes the uploaded profile banner for the authenticated user.
+        /// </summary>
+        public static bool RemoveUserProfileBanner()
+        {
+            return AccountController.RemoveUserProfileBanner();
+        }
+
+        /// <summary>
+        /// Updates the authenticated user’s profile background image. 
+        /// </summary>
+        public static bool UpdateProfileBackgroundImage(byte[] imageBinary)
+        {
+            return AccountController.UpdateProfileBackgroundImage(imageBinary);
+        }
+
+        /// <summary>
+        /// Updates the authenticated user’s profile background image. 
+        /// </summary>
+        public static bool UpdateProfileBackgroundImage(long mediaId)
+        {
+            return AccountController.UpdateProfileBackgroundImage(mediaId);
+        }
+
+        /// <summary>
+        /// Updates the authenticated user’s profile background image. 
+        /// </summary>
+        public static bool UpdateProfileBackgroundImage(IAccountUpdateProfileBackgroundImageParameters parameters)
+        {
+            return AccountController.UpdateProfileBackgroundImage(parameters);
         }
 
         // Mute

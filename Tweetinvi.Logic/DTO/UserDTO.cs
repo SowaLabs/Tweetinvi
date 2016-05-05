@@ -39,6 +39,9 @@ namespace Tweetinvi.Logic.DTO
         [JsonConverter(typeof(JsonPropertyConverterRepository))]
         public Language Language { get; set; }
 
+        [JsonProperty("email")]
+        public string Email { get; set; }
+
         [JsonProperty("statuses_count")]
         public int StatusesCount { get; set; }
 
@@ -83,7 +86,7 @@ namespace Tweetinvi.Logic.DTO
         public bool DefaultProfileImage { get; set; }
 
         [JsonProperty("favourites_count")]
-        public int? FavouritesCount { get; set; }
+        public int? FavoritesCount { get; set; }
 
         [JsonProperty("listed_count")]
         public int? ListedCount { get; set; }

@@ -3,15 +3,40 @@ using System.Diagnostics;
 
 namespace Tweetinvi.Core
 {
+    /// <summary>
+    /// @Injectable : use in order to retrieve tweetinvi settings anywhere in the application.
+    /// </summary>
     public interface ITweetinviSettingsAccessor
     {
+        /// <summary>
+        /// Current thread settings.
+        /// </summary>
         ITweetinviSettings CurrentThreadSettings { get; set; }
+
+        /// <summary>
+        /// Application thread settings.
+        /// </summary>
         ITweetinviSettings ApplicationSettings { get; set; }
 
-        bool ShowDebug { get; set; }
+        /// <summary>
+        /// Proxy URL used by the current thread.
+        /// </summary>
         string ProxyURL { get; set; }
-        int WebRequestTimeout { get; set; }
-        RateLimitTrackerOptions RateLimitTrackerOption { get; set; }
+
+        /// <summary>
+        /// Http requests timeout in the current thread.
+        /// </summary>
+        int HttpRequestTimeout { get; set; }
+
+        /// <summary>
+        /// Upload timeout in the current thread.
+        /// </summary>
+        int UploadTimeout { get; set; }
+
+        /// <summary>
+        /// Solution used to track the rate limits in the current thread.
+        /// </summary>
+        RateLimitTrackerMode RateLimitTrackerMode { get; set; }
     }
 
     public class TweetinviSettingsAccessor : ITweetinviSettingsAccessor
@@ -21,14 +46,10 @@ namespace Tweetinvi.Core
         public TweetinviSettingsAccessor()
         {
             var threadSettings = TweetinviCoreModule.TweetinviContainer.Resolve<ITweetinviSettings>();
-            threadSettings.WebRequestTimeout = 10000;
+            threadSettings.HttpRequestTimeout = 10000;
+            threadSettings.UploadTimeout = 60000;
 
             CurrentThreadSettings = threadSettings;
-
-
-# if DEBUG
-            CurrentThreadSettings.ShowDebug = true;
-#endif
         }
 
         [ThreadStatic]
@@ -80,28 +101,28 @@ namespace Tweetinvi.Core
             return StaticTweetinviSettings != null;
         }
 
-        public bool ShowDebug
-        {
-            get { return CurrentThreadSettings.ShowDebug; }
-            set { CurrentThreadSettings.ShowDebug = value; }
-        }
-
         public string ProxyURL
         {
             get { return CurrentThreadSettings.ProxyURL; }
             set { CurrentThreadSettings.ProxyURL = value; }
         }
 
-        public int WebRequestTimeout
+        public int HttpRequestTimeout
         {
-            get { return CurrentThreadSettings.WebRequestTimeout; }
-            set { CurrentThreadSettings.WebRequestTimeout = value; }
+            get { return CurrentThreadSettings.HttpRequestTimeout; }
+            set { CurrentThreadSettings.HttpRequestTimeout = value; }
         }
 
-        public RateLimitTrackerOptions RateLimitTrackerOption
+        public int UploadTimeout
         {
-            get { return CurrentThreadSettings.RateLimitTrackerOption; }
-            set { CurrentThreadSettings.RateLimitTrackerOption = value; }
+            get { return CurrentThreadSettings.UploadTimeout; }
+            set { CurrentThreadSettings.UploadTimeout = value; }
+        }
+
+        public RateLimitTrackerMode RateLimitTrackerMode
+        {
+            get { return CurrentThreadSettings.RateLimitTrackerMode; }
+            set { CurrentThreadSettings.RateLimitTrackerMode = value; }
         }
     }
 }

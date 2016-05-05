@@ -24,6 +24,8 @@ namespace Tweetinvi.Core.Interfaces.DTO
 
         Language Language { get; set; }
 
+        string Email { get; set; }
+
         int StatusesCount { get; set; }
 
         int FollowersCount { get; set; }
@@ -50,7 +52,7 @@ namespace Tweetinvi.Core.Interfaces.DTO
 
         bool DefaultProfileImage { get; set; }
 
-        int? FavouritesCount { get; set; }
+        int? FavoritesCount { get; set; }
 
         int? ListedCount { get; set; }
 

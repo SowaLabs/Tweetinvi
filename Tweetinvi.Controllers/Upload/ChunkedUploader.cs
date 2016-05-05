@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using Newtonsoft.Json;
-using Tweetinvi.Controllers.Properties;
-using Tweetinvi.Core.Extensions;
 using Tweetinvi.Core.Interfaces.Controllers.Transactions;
 using Tweetinvi.Core.Interfaces.Credentials;
 using Tweetinvi.Core.Interfaces.DTO;
 using Tweetinvi.Core.Interfaces.QueryGenerators;
+using Tweetinvi.Core.Web;
 
 namespace Tweetinvi.Controllers.Upload
 {
@@ -43,40 +41,72 @@ namespace Tweetinvi.Controllers.Upload
 
         public bool Init(string mediaType, int totalBinaryLength)
         {
-            var initQuery = _uploadQueryGenerator.GetChunkedUploadInitQuery(mediaType, totalBinaryLength);
+            var parameters = new ChunkUploadInitParameters
+            {
+                MediaType = mediaType,
+                TotalBinaryLength = totalBinaryLength
+            };
+
+            return Init(parameters);
+        }
+
+        public bool Init(IChunkUploadInitParameters initParameters)
+        {
+            var initQuery = _uploadQueryGenerator.GetChunkedUploadInitQuery(initParameters);
 
             var initModel = _twitterAccessor.ExecutePOSTQuery<UploadInitModel>(initQuery);
             if (initModel != null)
             {
-                _expectedBinaryLength = totalBinaryLength;
+                _expectedBinaryLength = initParameters.TotalBinaryLength;
                 _media.MediaId = initModel.MediaId;
             }
 
             return initModel != null;
         }
 
-        public bool Append(byte[] binary, int? segmentIndex = null)
+        public bool Append(byte[] binary, string mediaType, TimeSpan? timeout = null, int? segmentIndex = null)
+        {
+            var parameters = new ChunkUploadAppendParameters(binary, mediaType, timeout);
+            parameters.SegmentIndex = segmentIndex;
+            return Append(parameters);
+        }
+
+        public bool Append(IChunkUploadAppendParameters parameters)
         {
             if (MediaId == null)
             {
                 throw new InvalidOperationException("You cannot append content to a non initialized chunked upload. You need to invoke the initialize method OR set the MediaId property of an existing ChunkedUpload.");
             }
 
-            if (segmentIndex == null)
+            if (parameters.SegmentIndex == null)
             {
-                segmentIndex = NextSegmentIndex;
+                parameters.SegmentIndex = NextSegmentIndex;
             }
 
-            var appendQuery = _uploadQueryGenerator.GetChunkedUploadAppendQuery(MediaId.Value, segmentIndex.Value);
-            var sucess = _twitterAccessor.TryExecuteMultipartQuery(appendQuery, new[] { binary });
-
-            if (sucess)
+            if (parameters.MediaId == null)
             {
-                UploadedSegments.Add(segmentIndex.Value, binary);
+                parameters.MediaId = MediaId;
+            }
+
+            var appendQuery = _uploadQueryGenerator.GetChunkedUploadAppendQuery(parameters);
+
+            var multiPartRequestParameters = new MultipartHttpRequestParameters
+            {
+                Query = appendQuery,
+                Binaries = new List<byte[]> { parameters.Binary },
+                Timeout = parameters.Timeout,
+                ContentId = parameters.MediaType
+            };
+
+            var success = _twitterAccessor.TryExecuteMultipartQuery(multiPartRequestParameters);
+
+            if (success)
+            {
+                UploadedSegments.Add(parameters.SegmentIndex.Value, parameters.Binary);
                 ++NextSegmentIndex;
             }
 
-            return sucess;
+            return success;
         }
 
         public IMedia Complete()

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using Tweetinvi.Controllers.Properties;
 using Tweetinvi.Controllers.Shared;
@@ -10,13 +11,22 @@ using Tweetinvi.Core.Interfaces.Models;
 using Tweetinvi.Core.Interfaces.QueryGenerators;
 using Tweetinvi.Core.Interfaces.QueryValidators;
 using Tweetinvi.Core.Parameters;
+using Tweetinvi.Core.Web;
 
 namespace Tweetinvi.Controllers.Account
 {
     public interface IAccountQueryGenerator
     {
-        string GetLoggedUserAccountSettingsQuery();
-        string GetUpdateLoggedUserAccountSettingsQuery(IAccountSettingsRequestParameters accountSettingsRequestParameters);
+        string GetAuthenticatedUserAccountSettingsQuery();
+        string GetUpdateAuthenticatedUserAccountSettingsQuery(IAccountSettingsRequestParameters accountSettingsRequestParameters);
+
+        // Profile
+        string GetUpdateProfileParametersQuery(IAccountUpdateProfileParameters parameters);
+        string GetUpdateProfileImageQuery(IAccountUpdateProfileImageParameters parameters);
+
+        string GetUpdateProfileBannerQuery(IAccountUpdateProfileBannerParameters parameters);
+        string GetRemoveUserProfileBannerQuery();
+        string GetUpdateProfilBackgroundImageQuery(IAccountUpdateProfileBackgroundImageParameters parameters);
 
         // Mute
         string GetMutedUserIdsQuery();
@@ -51,12 +61,12 @@ namespace Tweetinvi.Controllers.Account
             _queryParameterGenerator = queryParameterGenerator;
         }
 
-        public string GetLoggedUserAccountSettingsQuery()
+        public string GetAuthenticatedUserAccountSettingsQuery()
         {
             return Resources.Account_GetSettings;
         }
 
-        public string GetUpdateLoggedUserAccountSettingsQuery(IAccountSettingsRequestParameters accountSettingsRequestParameters)
+        public string GetUpdateAuthenticatedUserAccountSettingsQuery(IAccountSettingsRequestParameters accountSettingsRequestParameters)
         {
             var baseQuery = new StringBuilder(Resources.Account_UpdateSettings);
 
@@ -71,7 +81,6 @@ namespace Tweetinvi.Controllers.Account
 
             return baseQuery.ToString();
         }
-
         private string GetLanguagesParameter(IEnumerable<Language> languages)
         {
             // ReSharper disable once SimplifyLinqExpression
@@ -84,6 +93,73 @@ namespace Tweetinvi.Controllers.Account
             var parameters = string.Join(Uri.EscapeDataString(", "), validLanguages);
 
             return string.Format("&lang={0}", parameters);
+        }
+
+        // Profile
+        public string GetUpdateProfileParametersQuery(IAccountUpdateProfileParameters parameters)
+        {
+            var query = new StringBuilder(Resources.Account_UpdateProfile);
+
+            query.AddParameterToQuery("name", parameters.Name);
+            query.AddParameterToQuery("url", parameters.Url);
+            query.AddParameterToQuery("location", parameters.Location);
+            query.AddParameterToQuery("description", parameters.Description);
+            query.AddParameterToQuery("profile_link_color", parameters.ProfileLinkColor);
+            query.AddParameterToQuery("include_entities", parameters.IncludeEntities);
+            query.AddParameterToQuery("skip_status", parameters.SkipStatus);
+
+            query.AddFormattedParameterToQuery(parameters.FormattedCustomQueryParameters);
+
+            return query.ToString();
+        }
+
+        public string GetUpdateProfileImageQuery(IAccountUpdateProfileImageParameters parameters)
+        {
+            var query = new StringBuilder(Resources.Account_UpdateProfileImage);
+
+            query.AddParameterToQuery("include_entities", parameters.IncludeEntities);
+            query.AddParameterToQuery("skip_status", parameters.SkipStatus);
+
+            query.AddFormattedParameterToQuery(parameters.FormattedCustomQueryParameters);
+
+            return query.ToString();
+        }
+
+        public string GetUpdateProfileBannerQuery(IAccountUpdateProfileBannerParameters parameters)
+        {
+            var query = new StringBuilder(Resources.Account_UpdateProfileBanner);
+
+            query.AddParameterToQuery("width", parameters.Width);
+            query.AddParameterToQuery("height", parameters.Height);
+            query.AddParameterToQuery("offset_left", parameters.OffsetLeft);
+            query.AddParameterToQuery("offset_top", parameters.OffsetTop);
+
+            query.AddFormattedParameterToQuery(parameters.FormattedCustomQueryParameters);
+
+            return query.ToString();
+        }
+
+        public string GetRemoveUserProfileBannerQuery()
+        {
+            return Resources.Account_RemoveProfileBanner;
+        }
+
+        public string GetUpdateProfilBackgroundImageQuery(IAccountUpdateProfileBackgroundImageParameters parameters)
+        {
+            var query = new StringBuilder(Resources.Account_UpdateProfileBackgroundImage);
+
+            if (parameters.Binary == null)
+            {
+                query.AddParameterToQuery("media_id", parameters.MediaId);
+            }
+
+            query.AddParameterToQuery("tile", parameters.UseTileMode);
+            query.AddParameterToQuery("include_entities", parameters.IncludeEntities);
+            query.AddParameterToQuery("skip_status", parameters.SkipStatus);
+
+            query.AddFormattedParameterToQuery(parameters.FormattedCustomQueryParameters);
+
+            return query.ToString();
         }
 
         // Mute

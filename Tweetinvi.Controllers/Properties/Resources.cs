@@ -40,6 +40,31 @@ namespace Tweetinvi.Controllers.Properties
         public static string Account_UpdateSettings = "https://api.twitter.com/1.1/account/settings.json?";
 
         /// <summary>
+        ///   Looks up a localized string similar to https://api.twitter.com/1.1/account/update_profile.json.
+        /// </summary>
+        public static string Account_UpdateProfile = "https://api.twitter.com/1.1/account/update_profile.json";
+
+        /// <summary>
+        ///   Looks up a localized string similar to https://api.twitter.com/1.1/account/update_profile_image.json.
+        /// </summary>
+        public static string Account_UpdateProfileImage = "https://api.twitter.com/1.1/account/update_profile_image.json";
+
+        /// <summary>
+        ///   Looks up a localized string similar to https://api.twitter.com/1.1/account/update_profile_banner.json.
+        /// </summary>
+        public static string Account_UpdateProfileBanner = "https://api.twitter.com/1.1/account/update_profile_banner.json";
+
+        /// <summary>
+        ///   Looks up a localized string similar to https://api.twitter.com/1.1/account/remove_profile_banner.json.
+        /// </summary>
+        public static string Account_RemoveProfileBanner = "https://api.twitter.com/1.1/account/remove_profile_banner.json";
+
+        /// <summary>
+        ///   Looks up a localized string similar to https://api.twitter.com/1.1/account/update_profile_background_image.json.
+        /// </summary>
+        public static string Account_UpdateProfileBackgroundImage = "https://api.twitter.com/1.1/account/update_profile_background_image.json";
+
+        /// <summary>
         ///   Looks up a localized string similar to https://api.twitter.com/1.1/users/suggestions/{0}.json?{1}.
         /// </summary>
         public static string Account_UserSuggestions = "https://api.twitter.com/1.1/users/suggestions/{0}.json?{1}";
@@ -95,6 +120,16 @@ namespace Tweetinvi.Controllers.Properties
         public static string Geo_GetPlaceFromId = "https://api.twitter.com/1.1/geo/id/{0}.json";
 
         /// <summary>
+        ///   Looks up a localized string similar to https://api.twitter.com/1.1/geo/search.json.
+        /// </summary>
+        public static string Geo_SearchGeo = "https://api.twitter.com/1.1/geo/search.json";
+
+        /// <summary>
+        ///   Looks up a localized string similar to https://api.twitter.com/1.1/geo/reverse_geocode.json.
+        /// </summary>
+        public static string Geo_SearchGeoReverse = "https://api.twitter.com/1.1/geo/reverse_geocode.json";
+
+        /// <summary>
         ///   Looks up a localized string similar to place_id={0}.
         /// </summary>
         public static string Geo_PlaceIdParameter = "place_id={0}";
@@ -108,6 +143,11 @@ namespace Tweetinvi.Controllers.Properties
         ///   Looks up a localized string similar to https://api.twitter.com/1.1/help/configuration.json.
         /// </summary>
         public static string Help_GetTwitterConfiguration = "https://api.twitter.com/1.1/help/configuration.json";
+
+        /// <summary>
+        ///   Looks up a localized string similar to https://api.twitter.com/1.1/help/tos.json.
+        /// </summary>
+        public static string Help_GetTermsOfService = "https://api.twitter.com/1.1/help/tos.json";
 
         /// <summary>
         ///   Looks up a localized string similar to https://api.twitter.com/1.1/help/privacy.json.
@@ -295,14 +335,14 @@ namespace Tweetinvi.Controllers.Properties
         public static string SavedSearches_GetList = "https://api.twitter.com/1.1/saved_searches/list.json";
 
         /// <summary>
-        ///   Looks up a localized string similar to https://api.twitter.com/1.1/search/tweets.json?q={0}.
+        ///   Looks up a localized string similar to https://api.twitter.com/1.1/search/tweets.json.
         /// </summary>
-        public static string Search_SearchTweets = "https://api.twitter.com/1.1/search/tweets.json?q={0}";
+        public static string Search_SearchTweets = "https://api.twitter.com/1.1/search/tweets.json";
 
         /// <summary>
-        ///   Looks up a localized string similar to https://api.twitter.com/1.1/users/search.json?q={0}.
+        ///   Looks up a localized string similar to https://api.twitter.com/1.1/users/search.json.
         /// </summary>
-        public static string Search_SearchUsers = "https://api.twitter.com/1.1/users/search.json?q={0}";
+        public static string Search_SearchUsers = "https://api.twitter.com/1.1/users/search.json";
 
         /// <summary>
         ///   Looks up a localized string similar to &amp;geocode={0}%2C{1}%2C{2}{3}.
@@ -375,6 +415,16 @@ namespace Tweetinvi.Controllers.Properties
         public static string Trends_GetTrendsFromWoeId = "https://api.twitter.com/1.1/trends/place.json?id={0}";
 
         /// <summary>
+        ///   Looks up a localized string similar to https://api.twitter.com/1.1/trends/available.json.
+        /// </summary>
+        public static string Trends_GetAvailableTrendsLocations = "https://api.twitter.com/1.1/trends/available.json";
+
+        /// <summary>
+        ///   Looks up a localized string similar to https://api.twitter.com/1.1/trends/closest.json.
+        /// </summary>
+        public static string Trends_GetClosestTrendsLocations = "https://api.twitter.com/1.1/trends/closest.json";
+
+        /// <summary>
         ///   Looks up a localized string similar to https://api.twitter.com/1.1/statuses/destroy/{0}.json.
         /// </summary>
         public static string Tweet_Destroy = "https://api.twitter.com/1.1/statuses/destroy/{0}.json";
@@ -398,6 +448,11 @@ namespace Tweetinvi.Controllers.Properties
         ///   Looks up a localized string similar to https://api.twitter.com/1.1/statuses/show.json?id={0}&amp;include_my_retweet=true.
         /// </summary>
         public static string Tweet_Get = "https://api.twitter.com/1.1/statuses/show.json?id={0}&include_my_retweet=true";
+
+        /// <summary>
+        ///   Looks up a localized string similar to https://api.twitter.com/1.1/statuses/retweeters/ids.json.
+        /// </summary>
+        public static string Tweet_GetRetweeters = "https://api.twitter.com/1.1/statuses/retweeters/ids.json";
 
         /// <summary>
         ///   Looks up a localized string similar to https://api.twitter.com/1.1/statuses/lookup.json?id={0}&amp;include_my_retweet=true.
@@ -425,9 +480,14 @@ namespace Tweetinvi.Controllers.Properties
         public static string Tweet_PublishWithMediaInReplyTo = "https://api.twitter.com/1.1/statuses/update_with_media.json?status={0}&in_reply_to_status_id={1}";
 
         /// <summary>
-        ///   Looks up a localized string similar to https://api.twitter.com/1.1/statuses/retweets/{0}.json.
+        ///   Looks up a localized string similar to https://api.twitter.com/1.1/statuses/retweets/{0}.json?count={1}.
         /// </summary>
         public static string Tweet_Retweet_GetRetweets = "https://api.twitter.com/1.1/statuses/retweets/{0}.json";
+
+        /// <summary>
+        ///   Looks up a localized string similar to https://api.twitter.com/1.1/statuses/unretweet/{0}.json?trim_user=true.
+        /// </summary>
+        public static string Tweet_UnRetweet = "https://api.twitter.com/1.1/statuses/unretweet/{0}.json?trim_user=true";
 
         /// <summary>
         ///   Looks up a localized string similar to https://api.twitter.com/1.1/statuses/retweet/{0}.json?trim_user=true.
@@ -438,6 +498,11 @@ namespace Tweetinvi.Controllers.Properties
         ///   Looks up a localized string similar to https://upload.twitter.com/1.1/media/upload.json.
         /// </summary>
         public static string Upload_URL = "https://upload.twitter.com/1.1/media/upload.json";
+
+        /// <summary>
+        ///   Looks up a localized string similar to https://api.twitter.com/1.1/account/verify_credentials.json.
+        /// </summary>
+        public static string User_GetCurrentUser = "https://api.twitter.com/1.1/account/verify_credentials.json";
 
         /// <summary>
         ///   Looks up a localized string similar to https://api.twitter.com/1.1/blocks/create.json?{0}.
@@ -462,7 +527,7 @@ namespace Tweetinvi.Controllers.Properties
         /// <summary>
         ///   Looks up a localized string similar to https://api.twitter.com/1.1/favorites/list.json?{0}&amp;count={1}.
         /// </summary>
-        public static string User_GetFavourites = "https://api.twitter.com/1.1/favorites/list.json?{0}&count={1}";
+        public static string User_GetFavourites = "https://api.twitter.com/1.1/favorites/list.json?";
 
         /// <summary>
         ///   Looks up a localized string similar to https://api.twitter.com/1.1/followers/ids.json?{0}&amp;count={1}.
@@ -475,9 +540,9 @@ namespace Tweetinvi.Controllers.Properties
         public static string User_GetFriends = "https://api.twitter.com/1.1/friends/ids.json?{0}&count={1}";
 
         /// <summary>
-        ///   Looks up a localized string similar to https://dev.twitter.com/rest/reference/post/users/report_spam?{0}.
+        ///   Looks up a localized string similar to https://api.twitter.com/1.1/users/report_spam.json?{0}.
         /// </summary>
-        public static string User_Report_Spam = "https://dev.twitter.com/rest/reference/post/users/report_spam?{0}";
+        public static string User_Report_Spam = "https://api.twitter.com/1.1/users/report_spam.json?{0}";
 
         public static string GetResourceByName(string resourceName)
         {

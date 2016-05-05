@@ -20,12 +20,15 @@ namespace Tweetinvi.Streams
 {
     public class TrackedStream : TwitterStream, ITrackedStream
     {
+        public event EventHandler<MatchedTweetReceivedEventArgs> TweetReceived;
         public event EventHandler<MatchedTweetReceivedEventArgs> MatchingTweetReceived;
+        public event EventHandler<TweetEventArgs> NonMatchingTweetReceived;
 
         protected readonly IStreamTrackManager<ITweet> _streamTrackManager;
         protected readonly IJsonObjectConverter _jsonObjectConverter;
         protected readonly ITweetFactory _tweetFactory;
         protected readonly ISynchronousInvoker _synchronousInvoker;
+
         private readonly ISingleAggregateExceptionThrower _singleAggregateExceptionThrower;
         private readonly ITwitterQueryFactory _twitterQueryFactory;
 
@@ -54,7 +57,7 @@ namespace Tweetinvi.Streams
 
         public void StartStream(string url)
         {
-            Action startStreamAction = () => _synchronousInvoker.ExecuteSynchronously(StartStreamAsync(url));
+            Action startStreamAction = () => _synchronousInvoker.ExecuteSynchronously(() => StartStreamAsync(url));
             _singleAggregateExceptionThrower.ExecuteActionAndThrowJustOneExceptionIfExist(startStreamAction);
         }
 
@@ -81,9 +84,23 @@ namespace Tweetinvi.Streams
 
                 var detectedTracksAndActions = _streamTrackManager.GetMatchingTracksAndActions(tweet.Text);
                 var detectedTracks = detectedTracksAndActions.Select(x => x.Item1);
+
+                var eventArgs = new MatchedTweetReceivedEventArgs(tweet)
+                {
+                    MatchingTracks = detectedTracks.ToArray(),
+                };
+
                 if (detectedTracksAndActions.Any())
                 {
-                    this.Raise(MatchingTweetReceived, new MatchedTweetReceivedEventArgs(tweet, detectedTracks));
+                    eventArgs.MatchOn = MatchOn.TweetText;
+
+                    RaiseTweetReceived(eventArgs);
+                    RaiseMatchingTweetReceived(eventArgs);
+                }
+                else
+                {
+                    RaiseTweetReceived(eventArgs);
+                    RaiseNonMatchingTweetReceived(new TweetEventArgs(tweet));
                 }
             };
 
@@ -145,9 +162,19 @@ namespace Tweetinvi.Streams
             _streamTrackManager.ClearTracks();
         }
 
+        protected void RaiseTweetReceived(MatchedTweetReceivedEventArgs eventArgs)
+        {
+            this.Raise(TweetReceived, eventArgs);
+        }
+
         protected void RaiseMatchingTweetReceived(MatchedTweetReceivedEventArgs eventArgs)
         {
             this.Raise(MatchingTweetReceived, eventArgs);
+        }
+
+        protected void RaiseNonMatchingTweetReceived(TweetEventArgs eventArgs)
+        {
+            this.Raise(NonMatchingTweetReceived, eventArgs);
         }
     }
 }

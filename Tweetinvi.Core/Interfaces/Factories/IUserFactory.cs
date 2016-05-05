@@ -1,15 +1,14 @@
 ﻿using System.Collections.Generic;
-using Tweetinvi.Core.Credentials;
+using Tweetinvi.Core.Authentication;
 using Tweetinvi.Core.Interfaces.DTO;
 using Tweetinvi.Core.Interfaces.Models;
-using Tweetinvi.Core.Interfaces.WebLogic;
+using Tweetinvi.Core.Parameters;
 
 namespace Tweetinvi.Core.Interfaces.Factories
 {
     public interface IUserFactory
     {
-        ILoggedUser GetLoggedUser();
-        ILoggedUser GetLoggedUser(ITwitterCredentials credentials);
+        IAuthenticatedUser GetAuthenticatedUser(ITwitterCredentials credentials = null, IGetAuthenticatedUserParameters parameters = null);
 
         IUser GetUserFromId(long userId);
         IUser GetUserFromScreenName(string userName);
@@ -23,7 +22,7 @@ namespace Tweetinvi.Core.Interfaces.Factories
 
         // Generate user from DTO
         IUser GenerateUserFromDTO(IUserDTO userDTO);
-        ILoggedUser GenerateLoggedUserFromDTO(IUserDTO userDTO);
+        IAuthenticatedUser GenerateAuthenticatedUserFromDTO(IUserDTO userDTO);
         IEnumerable<IUser> GenerateUsersFromDTO(IEnumerable<IUserDTO> usersDTO);
 
         // Generate userIdentifier from

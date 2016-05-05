@@ -99,12 +99,12 @@ namespace Tweetinvi.Core.Interfaces
         /// <summary>
         /// Is the tweet favourited
         /// </summary>
-        bool Favourited { get; }
+        bool Favorited { get; }
 
         /// <summary>
         /// Number of time the tweet has been favourited
         /// </summary>
-        int FavouriteCount { get; }
+        int FavoriteCount { get; }
 
         /// <summary>
         /// Has the tweet been retweeted
@@ -155,6 +155,9 @@ namespace Tweetinvi.Core.Interfaces
 
         #region Tweetinvi API Properties
 
+        /// <summary>
+        /// Property used to store the data received from Twitter
+        /// </summary>
         ITweetDTO TweetDTO { get; set; }
 
         /// <summary>
@@ -233,6 +236,11 @@ namespace Tweetinvi.Core.Interfaces
         /// </summary>
         bool IsTweetDestroyed { get; }
 
+        /// <summary>
+        /// URL of the tweet on twitter.com
+        /// </summary>
+        string Url { get; }
+
         #endregion
 
         #region Favourites
@@ -240,17 +248,17 @@ namespace Tweetinvi.Core.Interfaces
         /// <summary>
         /// Favorites the tweet
         /// </summary>
-        void Favourite();
+        void Favorite();
 
         /// <summary>
         /// Remove the tweet from favourites
         /// </summary>
-        void UnFavourite();
+        void UnFavorite();
 
         #endregion
 
         /// <summary>
-        /// Retweet the current tweet from the currently logged user
+        /// Retweet the current tweet from the authenticated user.
         /// </summary>
         ITweet PublishRetweet();
 
@@ -260,12 +268,17 @@ namespace Tweetinvi.Core.Interfaces
         List<ITweet> GetRetweets();
 
         /// <summary>
+        /// Remove your retweet.
+        /// </summary>
+        bool UnRetweet();
+
+        /// <summary>
         /// Delete a tweet from Twitter
         /// </summary>
         bool Destroy();
 
         /// <summary>
-        /// Generate an OEmbedTweet
+        /// Generate an OEmbedTweet.
         /// </summary>
         IOEmbedTweet GenerateOEmbedTweet();
     }

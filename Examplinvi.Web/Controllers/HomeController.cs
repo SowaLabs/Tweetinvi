@@ -1,6 +1,6 @@
 ﻿using System.Web.Mvc;
 using Tweetinvi;
-using Tweetinvi.Core.Credentials;
+using Tweetinvi.Core.Authentication;
 
 namespace Examplinvi.Web.Controllers
 {
@@ -15,9 +15,9 @@ namespace Examplinvi.Web.Controllers
         {
             var appCreds = new ConsumerCredentials(MyCredentials.CONSUMER_KEY, MyCredentials.CONSUMER_SECRET);
             var redirectURL = "http://" + Request.Url.Authority + "/Home/ValidateTwitterAuth";
-            var url = CredentialsCreator.GetAuthorizationURL(appCreds, redirectURL);
+            var authenticationContext = AuthFlow.InitAuthentication(appCreds, redirectURL);
 
-            return new RedirectResult(url);
+            return new RedirectResult(authenticationContext.AuthorizationURL);
         }
 
         public ActionResult ValidateTwitterAuth()
@@ -25,10 +25,13 @@ namespace Examplinvi.Web.Controllers
             var verifierCode = Request.Params.Get("oauth_verifier");
             var authorizationId = Request.Params.Get("authorization_id");
 
-            var userCreds = CredentialsCreator.GetCredentialsFromVerifierCode(verifierCode, authorizationId);
-            var user = Tweetinvi.User.GetLoggedUser(userCreds);
+            if (verifierCode != null)
+            {
+                var userCreds = AuthFlow.CreateCredentialsFromVerifierCode(verifierCode, authorizationId);
+                var user = Tweetinvi.User.GetAuthenticatedUser(userCreds);
 
-            ViewBag.User = user;
+                ViewBag.User = user;
+            }
 
             return View();
         }

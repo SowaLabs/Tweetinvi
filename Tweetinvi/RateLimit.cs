@@ -1,6 +1,6 @@
 ﻿using System;
 using Tweetinvi.Core;
-using Tweetinvi.Core.Credentials;
+using Tweetinvi.Core.Authentication;
 using Tweetinvi.Core.Events.EventArguments;
 using Tweetinvi.Core.Interfaces.Controllers;
 using Tweetinvi.Core.Interfaces.Credentials;
@@ -25,22 +25,52 @@ namespace Tweetinvi
             }
         }
 
-        private static readonly IRateLimitAwaiter _rateLimitAwaiter;
-        private static readonly IRateLimitCacheManager _rateLimitCacheManager;
+        [ThreadStatic]
+        private static IRateLimitCacheManager _rateLimitCacheManager;
+
+        private static IRateLimitCacheManager RateLimitCacheManager
+        {
+            get
+            {
+                if (_rateLimitCacheManager == null)
+                {
+                    Initialize();
+                }
+
+                return _rateLimitCacheManager;
+            }
+        }
+
+        [ThreadStatic]
+        private static IRateLimitAwaiter _rateLimitAwaiter;
+
+        private static IRateLimitAwaiter RateLimitAwaiter
+        {
+            get
+            {
+                if (_rateLimitAwaiter == null)
+                {
+                    Initialize();
+                }
+
+                return _rateLimitAwaiter;
+            }
+        }
+
         private static readonly IRateLimitCache _rateLimitCache;
 
         static RateLimit()
         {
             Initialize();
 
-            _rateLimitAwaiter = TweetinviContainer.Resolve<IRateLimitAwaiter>();
-            _rateLimitCacheManager = TweetinviContainer.Resolve<IRateLimitCacheManager>();
             _rateLimitCache = TweetinviContainer.Resolve<IRateLimitCache>();
         }
 
         static void Initialize()
         {
             _helpController = TweetinviContainer.Resolve<IHelpController>();
+            _rateLimitCacheManager = TweetinviContainer.Resolve<IRateLimitCacheManager>();
+            _rateLimitAwaiter = TweetinviContainer.Resolve<IRateLimitAwaiter>();
         }
 
         /// <summary>
@@ -48,17 +78,17 @@ namespace Tweetinvi
         /// </summary>
         public static event EventHandler<QueryAwaitingEventArgs> QueryAwaitingForRateLimit
         {
-            add { _rateLimitAwaiter.QueryAwaitingForRateLimit += value; }
-            remove { _rateLimitAwaiter.QueryAwaitingForRateLimit -= value; }
+            add { RateLimitAwaiter.QueryAwaitingForRateLimit += value; }
+            remove { RateLimitAwaiter.QueryAwaitingForRateLimit -= value; }
         }
 
         /// <summary>
         /// Configure how to Tweetinvi will handle RateLimits
         /// </summary>
-        public static RateLimitTrackerOptions RateLimitTrackerOption
+        public static RateLimitTrackerMode RateLimitTrackerMode
         {
-            get { return TweetinviConfig.CURRENT_RATELIMIT_TRACKER_OPTION; }
-            set { TweetinviConfig.CURRENT_RATELIMIT_TRACKER_OPTION = value; }
+            get { return TweetinviConfig.CurrentThreadSettings.RateLimitTrackerMode; }
+            set { TweetinviConfig.CurrentThreadSettings.RateLimitTrackerMode = value; }
         }
 
         /// <summary>
@@ -90,60 +120,60 @@ namespace Tweetinvi
         /// </summary>
         public static void AwaitForQueryRateLimit(string query, ITwitterCredentials credentials)
         {
-            _rateLimitAwaiter.WaitForCredentialsRateLimit(query, credentials);
+            RateLimitAwaiter.WaitForCredentialsRateLimit(query, credentials);
         }
 
         /// <summary>
         /// Wait for the rate limits to be available. This should be used before executing a query
         /// </summary>
-        public static void AwaitForQueryRateLimit(ITokenRateLimit tokenRateLimit)
+        public static void AwaitForQueryRateLimit(IEndpointRateLimit endpointRateLimit)
         {
-            _rateLimitAwaiter.WaitForCredentialsRateLimit(tokenRateLimit);
+            RateLimitAwaiter.WaitForCredentialsRateLimit(endpointRateLimit);
         }
 
         /// <summary>
         /// Get the rate limits information for an url
         /// </summary>
-        public static ITokenRateLimit GetQueryRateLimit(string query)
+        public static IEndpointRateLimit GetQueryRateLimit(string query)
         {
-            return _rateLimitCacheManager.GetQueryRateLimit(query, Auth.Credentials);
+            return RateLimitCacheManager.GetQueryRateLimit(query, Auth.Credentials);
         }
 
         /// <summary>
         /// Get the rate limits information for an url
         /// </summary>
-        public static ITokenRateLimit GetQueryRateLimit(string query, ITwitterCredentials credentials)
+        public static IEndpointRateLimit GetQueryRateLimit(string query, ITwitterCredentials credentials)
         {
-            return _rateLimitCacheManager.GetQueryRateLimit(query, credentials);
+            return RateLimitCacheManager.GetQueryRateLimit(query, credentials);
         }
 
         /// <summary>
         /// Get all the rate limits of all the Twitter endpoints
         /// </summary>
-        public static ITokenRateLimits GetCurrentCredentialsRateLimits(bool useRateLimitCache = false)
+        public static ICredentialsRateLimits GetCurrentCredentialsRateLimits(bool useRateLimitCache = false)
         {
-            ITokenRateLimits tokenRateLimits = null;
+            ICredentialsRateLimits credentialsRateLimits = null;
             if (!useRateLimitCache)
             {
-                tokenRateLimits = HelpController.GetCurrentCredentialsRateLimits();
-                _rateLimitCacheManager.UpdateTokenRateLimits(Auth.Credentials, tokenRateLimits);
+                credentialsRateLimits = HelpController.GetCurrentCredentialsRateLimits();
+                RateLimitCacheManager.UpdateCredentialsRateLimits(Auth.Credentials, credentialsRateLimits);
             }
             else
             {
-                tokenRateLimits = _rateLimitCacheManager.GetTokenRateLimits(Auth.Credentials);
+                credentialsRateLimits = RateLimitCacheManager.GetCredentialsRateLimits(Auth.Credentials);
             }
 
-            return tokenRateLimits;
+            return credentialsRateLimits;
         }
 
         /// <summary>
         /// Get all the rate limits of all the Twitter endpoints
         /// </summary>
-        public static ITokenRateLimits GetCredentialsRateLimits(ITwitterCredentials credentials, bool useRateLimitCache = false)
+        public static ICredentialsRateLimits GetCredentialsRateLimits(ITwitterCredentials credentials, bool useRateLimitCache = false)
         {
             if (useRateLimitCache)
             {
-                return _rateLimitCacheManager.GetTokenRateLimits(credentials);
+                return RateLimitCacheManager.GetCredentialsRateLimits(credentials);
             }
             else
             {

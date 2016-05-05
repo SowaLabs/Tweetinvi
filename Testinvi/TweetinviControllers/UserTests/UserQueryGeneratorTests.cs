@@ -8,8 +8,11 @@ using Tweetinvi.Controllers.Properties;
 using Tweetinvi.Controllers.User;
 using Tweetinvi.Core.Enum;
 using Tweetinvi.Core.Interfaces.DTO;
+using Tweetinvi.Core.Interfaces.Models;
 using Tweetinvi.Core.Interfaces.QueryGenerators;
 using Tweetinvi.Core.Interfaces.QueryValidators;
+using Tweetinvi.Core.Parameters;
+using Tweetinvi.Core.Parameters.QueryParameters;
 
 namespace Testinvi.TweetinviControllers.UserTests
 {
@@ -43,7 +46,7 @@ namespace Testinvi.TweetinviControllers.UserTests
             var result = queryGenerator.GetFriendIdsQuery(userDTO, maximumNumberOfFriends);
 
             // Assert
-            var expectedResult = String.Format(Resources.User_GetFriends, userIdParameter, maximumNumberOfFriends);
+            var expectedResult = string.Format(Resources.User_GetFriends, userIdParameter, maximumNumberOfFriends);
             Assert.AreEqual(result, expectedResult);
         }
 
@@ -78,7 +81,7 @@ namespace Testinvi.TweetinviControllers.UserTests
             var result = queryGenerator.GetFriendIdsQuery(userScreenName, maximumNumberOfFriends);
 
             // Assert
-            var expectedResult = String.Format(Resources.User_GetFriends, userIdParameter, maximumNumberOfFriends);
+            var expectedResult = string.Format(Resources.User_GetFriends, userIdParameter, maximumNumberOfFriends);
             Assert.AreEqual(result, expectedResult);
         }
 
@@ -116,7 +119,7 @@ namespace Testinvi.TweetinviControllers.UserTests
             var result = queryGenerator.GetFriendIdsQuery(userId, maximumNumberOfFriends);
 
             // Assert
-            var expectedResult = String.Format(Resources.User_GetFriends, userIdParameter, maximumNumberOfFriends);
+            var expectedResult = string.Format(Resources.User_GetFriends, userIdParameter, maximumNumberOfFriends);
             Assert.AreEqual(result, expectedResult);
         }
 
@@ -155,7 +158,7 @@ namespace Testinvi.TweetinviControllers.UserTests
             var result = queryGenerator.GetFollowerIdsQuery(userDTO, maximumNumberOfFollowers);
 
             // Assert
-            var expectedResult = String.Format(Resources.User_GetFollowers, userIdParameter, maximumNumberOfFollowers);
+            var expectedResult = string.Format(Resources.User_GetFollowers, userIdParameter, maximumNumberOfFollowers);
             Assert.AreEqual(result, expectedResult);
         }
 
@@ -190,7 +193,7 @@ namespace Testinvi.TweetinviControllers.UserTests
             var result = queryGenerator.GetFollowerIdsQuery(userScreenName, maximumNumberOfFollowers);
 
             // Assert
-            var expectedResult = String.Format(Resources.User_GetFollowers, userIdParameter, maximumNumberOfFollowers);
+            var expectedResult = string.Format(Resources.User_GetFollowers, userIdParameter, maximumNumberOfFollowers);
             Assert.AreEqual(result, expectedResult);
         }
 
@@ -228,7 +231,7 @@ namespace Testinvi.TweetinviControllers.UserTests
             var result = queryGenerator.GetFollowerIdsQuery(userId, maximumNumberOfFollowers);
 
             // Assert
-            var expectedResult = String.Format(Resources.User_GetFollowers, userIdParameter, maximumNumberOfFollowers);
+            var expectedResult = string.Format(Resources.User_GetFollowers, userIdParameter, maximumNumberOfFollowers);
             Assert.AreEqual(result, expectedResult);
         }
 
@@ -259,107 +262,24 @@ namespace Testinvi.TweetinviControllers.UserTests
         {
             // Arrange
             var queryGenerator = CreateUserQueryGenerator();
+            _fakeUserQueryValidator.CallsTo(x => x.CanUserBeIdentified(It.IsAny<IUserIdentifier>())).Returns(true);
             var userDTO = GenerateUserDTO(true);
             var maximumNumberOfFavourites = TestHelper.GenerateRandomInt();
             var userIdParameter = UserQueryGeneratorHelper.GenerateParameterExpectedResult(userDTO);
 
-            // Act
-            var result = queryGenerator.GetFavouriteTweetsQuery(userDTO, maximumNumberOfFavourites);
-
-            // Assert
-            var expectedResult = String.Format(Resources.User_GetFavourites, userIdParameter, maximumNumberOfFavourites);
-            Assert.AreEqual(result, expectedResult);
-        }
-
-        [TestMethod]
-        public void GetFavouriteTweetsQuery_WithInValidUserDTO_ReturnsNull()
-        {
-            // Arrange
-            var queryGenerator = CreateUserQueryGenerator();
-            var userDTO = GenerateUserDTO(false);
-            var maximumNumberOfFollowers = TestHelper.GenerateRandomInt();
+            var parameters = A.Fake<IGetUserFavoritesQueryParameters>();
+            parameters.UserIdentifier = new UserIdentifier(userIdParameter);
+            parameters.Parameters.MaximumNumberOfTweetsToRetrieve = maximumNumberOfFavourites;
+            parameters.Parameters.IncludeEntities = true;
 
             // Act
-            var result = queryGenerator.GetFavouriteTweetsQuery(userDTO, maximumNumberOfFollowers);
+            var result = queryGenerator.GetFavoriteTweetsQuery(parameters);
 
             // Assert
-            Assert.AreEqual(result, null);
-        }
-
-        [TestMethod]
-        public void GetFavouriteTweetsQuery_WithValidUserScreenName_ReturnsExpectedQuery()
-        {
-            // Arrange
-            var queryGenerator = CreateUserQueryGenerator();
-            var userScreenName = TestHelper.GenerateString();
-            var maximumNumberOfFavourites = TestHelper.GenerateRandomInt();
-            var userIdParameter = UserQueryGeneratorHelper.GenerateParameterExpectedResult(userScreenName);
-
-            _fakeUserQueryValidator.CallsTo(x => x.IsScreenNameValid(userScreenName)).Returns(true);
-            _fakeUserQueryParameterGenerator.ArrangeGenerateScreenNameParameter();
-
-            // Act
-            var result = queryGenerator.GetFavouriteTweetsQuery(userScreenName, maximumNumberOfFavourites);
-
-            // Assert
-            var expectedResult = String.Format(Resources.User_GetFavourites, userIdParameter, maximumNumberOfFavourites);
-            Assert.AreEqual(result, expectedResult);
-        }
-
-        [TestMethod]
-        public void GetFavouriteTweetsQuery_WithInValidUserScreenName_ReturnsNull()
-        {
-            // Arrange
-            var queryGenerator = CreateUserQueryGenerator();
-            var userScreenName = TestHelper.GenerateString();
-            var maximumNumberOfFavourites = TestHelper.GenerateRandomInt();
-
-            _fakeUserQueryValidator.CallsTo(x => x.IsScreenNameValid(userScreenName)).Returns(false);
-            _fakeUserQueryParameterGenerator.ArrangeGenerateScreenNameParameter();
-
-            // Act
-            var result = queryGenerator.GetFavouriteTweetsQuery(userScreenName, maximumNumberOfFavourites);
-
-            // Assert
-            Assert.AreEqual(result, null);
-        }
-
-        [TestMethod]
-        public void GetFavouriteTweetsQuery_WithValidUserId_ReturnsExpectedQuery()
-        {
-            // Arrange
-            var queryGenerator = CreateUserQueryGenerator();
-            var userId = TestHelper.GenerateRandomLong();
-            var maximumNumberOfFavourites = TestHelper.GenerateRandomInt();
-            var userIdParameter = UserQueryGeneratorHelper.GenerateParameterExpectedResult(userId);
-
-            _fakeUserQueryValidator.CallsTo(x => x.IsUserIdValid(userId)).Returns(true);
-            _fakeUserQueryParameterGenerator.ArrangeGenerateIdParameter();
-
-            // Act
-            var result = queryGenerator.GetFavouriteTweetsQuery(userId, maximumNumberOfFavourites);
-
-            // Assert
-            var expectedResult = String.Format(Resources.User_GetFavourites, userIdParameter, maximumNumberOfFavourites);
-            Assert.AreEqual(result, expectedResult);
-        }
-
-        [TestMethod]
-        public void GetFavouriteTweetsQuery_WithInValidUserId_ReturnsNull()
-        {
-            // Arrange
-            var queryGenerator = CreateUserQueryGenerator();
-            var userId = TestHelper.GenerateRandomLong();
-            var maximumNumberOfFavourites = TestHelper.GenerateRandomInt();
-
-            _fakeUserQueryValidator.CallsTo(x => x.IsUserIdValid(userId)).Returns(false);
-            _fakeUserQueryParameterGenerator.ArrangeGenerateIdParameter();
-
-            // Act
-            var result = queryGenerator.GetFavouriteTweetsQuery(userId, maximumNumberOfFavourites);
-
-            // Assert
-            Assert.AreEqual(result, null);
+            var expectedResult = string.Format("{0}user_id={1}", Resources.User_GetFavourites, userIdParameter);
+            Assert.IsTrue(result.StartsWith(Resources.User_GetFavourites));
+            Assert.IsTrue(result.Contains("count=" + maximumNumberOfFavourites));
+            Assert.IsTrue(result.Contains("include_entities=true"));
         }
 
         #endregion
@@ -378,7 +298,7 @@ namespace Testinvi.TweetinviControllers.UserTests
             var result = queryGenerator.GetBlockUserQuery(userDTO);
 
             // Assert
-            var expectedResult = String.Format(Resources.User_Block_Create, userIdParameter);
+            var expectedResult = string.Format(Resources.User_Block_Create, userIdParameter);
             Assert.AreEqual(result, expectedResult);
         }
 
@@ -411,7 +331,7 @@ namespace Testinvi.TweetinviControllers.UserTests
             var result = queryGenerator.GetBlockUserQuery(userScreenName);
 
             // Assert
-            var expectedResult = String.Format(Resources.User_Block_Create, userIdParameter);
+            var expectedResult = string.Format(Resources.User_Block_Create, userIdParameter);
             Assert.AreEqual(result, expectedResult);
         }
 
@@ -447,7 +367,7 @@ namespace Testinvi.TweetinviControllers.UserTests
             var result = queryGenerator.GetBlockUserQuery(userId);
 
             // Assert
-            var expectedResult = String.Format(Resources.User_Block_Create, userIdParameter);
+            var expectedResult = string.Format(Resources.User_Block_Create, userIdParameter);
             Assert.AreEqual(result, expectedResult);
         }
 
@@ -617,7 +537,7 @@ namespace Testinvi.TweetinviControllers.UserTests
             var result = queryGenerator.GetReportUserForSpamQuery(userDTO);
 
             // Assert
-            var expectedResult = String.Format(Resources.User_Report_Spam, userIdParameter);
+            var expectedResult = string.Format(Resources.User_Report_Spam, userIdParameter);
             Assert.AreEqual(result, expectedResult);
         }
 
@@ -650,7 +570,7 @@ namespace Testinvi.TweetinviControllers.UserTests
             var result = queryGenerator.GetReportUserForSpamQuery(userScreenName);
 
             // Assert
-            var expectedResult = String.Format(Resources.User_Report_Spam, userIdParameter);
+            var expectedResult = string.Format(Resources.User_Report_Spam, userIdParameter);
             Assert.AreEqual(result, expectedResult);
         }
 
@@ -686,7 +606,7 @@ namespace Testinvi.TweetinviControllers.UserTests
             var result = queryGenerator.GetReportUserForSpamQuery(userId);
 
             // Assert
-            var expectedResult = String.Format(Resources.User_Report_Spam, userIdParameter);
+            var expectedResult = string.Format(Resources.User_Report_Spam, userIdParameter);
             Assert.AreEqual(result, expectedResult);
         }
 

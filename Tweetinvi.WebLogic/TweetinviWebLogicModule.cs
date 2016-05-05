@@ -1,7 +1,8 @@
-﻿using Tweetinvi.Core.Credentials;
+﻿using Tweetinvi.Core.Authentication;
 using Tweetinvi.Core.Helpers;
 using Tweetinvi.Core.Injectinvi;
 using Tweetinvi.Core.Interfaces.WebLogic;
+using Tweetinvi.Core.Parameters.QueryParameters;
 using Tweetinvi.Core.Web;
 
 namespace Tweetinvi.WebLogic
@@ -24,6 +25,8 @@ namespace Tweetinvi.WebLogic
 
             _container.RegisterType<IConsumerCredentials, ConsumerCredentials>();
             _container.RegisterType<ITwitterCredentials, TwitterCredentials>();
+
+            _container.RegisterType<IUploadQueryParameters, UploadQueryParameters>();
 
             _container.RegisterType<IOAuthQueryParameter, OAuthQueryParameter>();
             _container.RegisterType<IOAuthWebRequestGenerator, OAuthWebRequestGenerator>();

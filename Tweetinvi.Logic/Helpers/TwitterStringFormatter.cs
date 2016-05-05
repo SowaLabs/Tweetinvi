@@ -9,7 +9,7 @@ namespace Tweetinvi.Logic.Helpers
         {
             if (source == null)
             {
-                return String.Empty;
+                return string.Empty;
             }
 
             return Uri.EscapeDataString(source);
@@ -19,7 +19,7 @@ namespace Tweetinvi.Logic.Helpers
         {
             if (source == null)
             {
-                return String.Empty;
+                return string.Empty;
             }
 
             return Uri.UnescapeDataString(source);

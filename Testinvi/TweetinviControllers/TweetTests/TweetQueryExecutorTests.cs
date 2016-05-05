@@ -14,6 +14,8 @@ using Tweetinvi.Core.Interfaces.QueryGenerators;
 using Tweetinvi.Core.Parameters;
 using Tweetinvi.Core.Parameters.QueryParameters;
 using Tweetinvi.Logic.Exceptions;
+using Tweetinvi.Core.Interfaces.DTO.QueryDTO;
+using Tweetinvi.Core.Interfaces.Models;
 
 namespace Testinvi.TweetinviControllers.TweetTests
 {
@@ -27,6 +29,8 @@ namespace Testinvi.TweetinviControllers.TweetTests
         private TwitterException _fake139TwitterException;
         private TwitterException _fakeOtherTwitterException;
 
+        private List<long> _cursorQueryIds;
+
         [TestInitialize]
         public void TestInitialize()
         {
@@ -37,12 +41,14 @@ namespace Testinvi.TweetinviControllers.TweetTests
             var fakeWebExceptionInfoExtractor = A.Fake<IWebExceptionInfoExtractor>();
 
             var twitter139ExceptionInfos = new TwitterExceptionInfo { Code = 139 };
-            fakeWebExceptionInfoExtractor.CallsTo(x => x.GetTwitterExceptionInfo(It.IsAny<WebException>())).Returns(new [] { twitter139ExceptionInfos });
+            fakeWebExceptionInfoExtractor.CallsTo(x => x.GetTwitterExceptionInfo(It.IsAny<WebException>())).Returns(new[] { twitter139ExceptionInfos });
             _fake139TwitterException = new TwitterException(fakeWebExceptionInfoExtractor, new WebException(), TestHelper.GenerateString());
 
             var twitterOtherExceptionInfos = new TwitterExceptionInfo { Code = 1 };
             fakeWebExceptionInfoExtractor.CallsTo(x => x.GetTwitterExceptionInfo(It.IsAny<WebException>())).Returns(new[] { twitterOtherExceptionInfos });
             _fakeOtherTwitterException = new TwitterException(fakeWebExceptionInfoExtractor, new WebException(), TestHelper.GenerateString());
+
+            _cursorQueryIds = new List<long>();
         }
 
         #region Publish Tweet
@@ -52,7 +58,7 @@ namespace Testinvi.TweetinviControllers.TweetTests
         {
             // Arrange
             var queryExecutor = CreateTweetQueryExecutor();
-            
+
             var parameters = A.Fake<IPublishTweetParameters>();
 
             var query = TestHelper.GenerateString();
@@ -115,41 +121,47 @@ namespace Testinvi.TweetinviControllers.TweetTests
         #region Get Retweets
 
         [TestMethod]
-        public void GetRetweets_FromTweetDTO_ReturnsTwitterAccessorResult()
+        public void GetRetweets_FromTweetIdentifier_ReturnsTwitterAccessorResult()
         {
             // Arrange
             var queryExecutor = CreateTweetQueryExecutor();
-            var tweetDTO = A.Fake<ITweetDTO>();
+            var tweetIdentifier = A.Fake<ITweetIdentifier>();
             var query = TestHelper.GenerateString();
-            IEnumerable<ITweetDTO> expectedResult = new List<ITweetDTO>();
+            var maxRetweetsToRetrieve = TestHelper.GenerateRandomInt();
+            IEnumerable<ITweetDTO> expectedResult = GenerateExpectedIRetweetsCursorResults();
 
-            _fakeTweetQueryGenerator.CallsTo(x => x.GetRetweetsQuery(tweetDTO)).Returns(query);
+            _fakeTweetQueryGenerator.CallsTo(x => x.GetRetweetsQuery(tweetIdentifier, maxRetweetsToRetrieve)).Returns(query);
             _fakeTwitterAccessor.ArrangeExecuteGETQuery(query, expectedResult);
 
             // Act
-            var result = queryExecutor.GetRetweets(tweetDTO);
+            var result = queryExecutor.GetRetweets(tweetIdentifier, maxRetweetsToRetrieve);
 
             // Assert
             Assert.AreEqual(result, expectedResult);
         }
 
+        #endregion
+
+        #region Get Retweeters Ids
+
         [TestMethod]
-        public void GetRetweets_FromTweetId_ReturnsTwitterAccessorResult()
+        public void GetRetweetersIds_FromTweetIdentifier_ReturnsTwitterAccessorResult()
         {
             // Arrange
             var queryExecutor = CreateTweetQueryExecutor();
-            var tweetId = TestHelper.GenerateRandomLong();
+            var tweetIdentifier = A.Fake<ITweetIdentifier>();
+            var maxRetweetersToRetrieve = TestHelper.GenerateRandomInt();
             var query = TestHelper.GenerateString();
-            IEnumerable<ITweetDTO> expectedResult = new List<ITweetDTO>();
+            var expectedCursorResults = GenerateExpectedCursorResults();
 
-            _fakeTweetQueryGenerator.CallsTo(x => x.GetRetweetsQuery(tweetId)).Returns(query);
-            _fakeTwitterAccessor.ArrangeExecuteGETQuery(query, expectedResult);
+            _fakeTweetQueryGenerator.CallsTo(x => x.GetRetweeterIdsQuery(tweetIdentifier, maxRetweetersToRetrieve)).Returns(query);
+            _fakeTwitterAccessor.ArrangeExecuteCursorGETQuery<long, IIdsCursorQueryResultDTO>(query, expectedCursorResults);
 
             // Act
-            var result = queryExecutor.GetRetweets(tweetId);
+            var result = queryExecutor.GetRetweetersIds(tweetIdentifier, maxRetweetersToRetrieve);
 
             // Assert
-            Assert.AreEqual(result, expectedResult);
+            Assert.IsTrue(result.ContainsAll(_cursorQueryIds));
         }
 
         #endregion
@@ -240,11 +252,11 @@ namespace Testinvi.TweetinviControllers.TweetTests
             var tweetDTO = A.Fake<ITweetDTO>();
             var query = TestHelper.GenerateString();
 
-            _fakeTweetQueryGenerator.CallsTo(x => x.GetFavouriteTweetQuery(tweetDTO)).Returns(query);
+            _fakeTweetQueryGenerator.CallsTo(x => x.GetFavoriteTweetQuery(tweetDTO)).Returns(query);
             _fakeTwitterAccessor.ArrangeTryExecutePOSTQuery(query, true);
 
             // Act
-            var result = queryExecutor.FavouriteTweet(tweetDTO);
+            var result = queryExecutor.FavoriteTweet(tweetDTO);
 
             // Assert
             Assert.IsTrue(result);
@@ -258,11 +270,11 @@ namespace Testinvi.TweetinviControllers.TweetTests
             var tweetDTO = A.Fake<ITweetDTO>();
             var query = TestHelper.GenerateString();
 
-            _fakeTweetQueryGenerator.CallsTo(x => x.GetFavouriteTweetQuery(tweetDTO)).Returns(query);
+            _fakeTweetQueryGenerator.CallsTo(x => x.GetFavoriteTweetQuery(tweetDTO)).Returns(query);
             _fakeTwitterAccessor.ArrangeExecutePOSTQuery(query, null);
 
             // Act
-            var result = queryExecutor.FavouriteTweet(tweetDTO);
+            var result = queryExecutor.FavoriteTweet(tweetDTO);
 
             // Assert
             Assert.IsFalse(result);
@@ -276,11 +288,11 @@ namespace Testinvi.TweetinviControllers.TweetTests
             var tweetDTO = A.Fake<ITweetDTO>();
             var query = TestHelper.GenerateString();
 
-            _fakeTweetQueryGenerator.CallsTo(x => x.GetFavouriteTweetQuery(tweetDTO)).Returns(query);
+            _fakeTweetQueryGenerator.CallsTo(x => x.GetFavoriteTweetQuery(tweetDTO)).Returns(query);
             _fakeTwitterAccessor.CallsTo(x => x.ExecutePOSTQuery(query)).Throws(_fake139TwitterException);
 
             // Act
-            var result = queryExecutor.FavouriteTweet(tweetDTO);
+            var result = queryExecutor.FavoriteTweet(tweetDTO);
 
             // Assert
             Assert.IsFalse(result);
@@ -294,13 +306,13 @@ namespace Testinvi.TweetinviControllers.TweetTests
             var tweetDTO = A.Fake<ITweetDTO>();
             var query = TestHelper.GenerateString();
 
-            _fakeTweetQueryGenerator.CallsTo(x => x.GetFavouriteTweetQuery(tweetDTO)).Returns(query);
+            _fakeTweetQueryGenerator.CallsTo(x => x.GetFavoriteTweetQuery(tweetDTO)).Returns(query);
             _fakeTwitterAccessor.CallsTo(x => x.ExecutePOSTQuery(query)).Throws(_fakeOtherTwitterException);
 
             // Act
             try
             {
-                queryExecutor.FavouriteTweet(tweetDTO);
+                queryExecutor.FavoriteTweet(tweetDTO);
             }
             catch (Exception ex)
             {
@@ -320,11 +332,11 @@ namespace Testinvi.TweetinviControllers.TweetTests
             var tweetId = TestHelper.GenerateRandomLong();
             var query = TestHelper.GenerateString();
 
-            _fakeTweetQueryGenerator.CallsTo(x => x.GetFavouriteTweetQuery(tweetId)).Returns(query);
+            _fakeTweetQueryGenerator.CallsTo(x => x.GetFavoriteTweetQuery(tweetId)).Returns(query);
             _fakeTwitterAccessor.ArrangeTryExecutePOSTQuery(query, true);
 
             // Act
-            var result = queryExecutor.FavouriteTweet(tweetId);
+            var result = queryExecutor.FavoriteTweet(tweetId);
 
             // Assert
             Assert.IsTrue(result);
@@ -338,11 +350,11 @@ namespace Testinvi.TweetinviControllers.TweetTests
             var tweetId = TestHelper.GenerateRandomLong();
             var query = TestHelper.GenerateString();
 
-            _fakeTweetQueryGenerator.CallsTo(x => x.GetFavouriteTweetQuery(tweetId)).Returns(query);
+            _fakeTweetQueryGenerator.CallsTo(x => x.GetFavoriteTweetQuery(tweetId)).Returns(query);
             _fakeTwitterAccessor.ArrangeExecutePOSTQuery(query, null);
 
             // Act
-            var result = queryExecutor.FavouriteTweet(tweetId);
+            var result = queryExecutor.FavoriteTweet(tweetId);
 
             // Assert
             Assert.IsFalse(result);
@@ -360,11 +372,11 @@ namespace Testinvi.TweetinviControllers.TweetTests
             var tweetDTO = A.Fake<ITweetDTO>();
             var query = TestHelper.GenerateString();
 
-            _fakeTweetQueryGenerator.CallsTo(x => x.GetUnFavouriteTweetQuery(tweetDTO)).Returns(query);
+            _fakeTweetQueryGenerator.CallsTo(x => x.GetUnFavoriteTweetQuery(tweetDTO)).Returns(query);
             _fakeTwitterAccessor.ArrangeTryExecutePOSTQuery(query, true);
 
             // Act
-            var result = queryExecutor.UnFavouriteTweet(tweetDTO);
+            var result = queryExecutor.UnFavoriteTweet(tweetDTO);
 
             // Assert
             Assert.IsTrue(result);
@@ -378,11 +390,11 @@ namespace Testinvi.TweetinviControllers.TweetTests
             var tweetDTO = A.Fake<ITweetDTO>();
             var query = TestHelper.GenerateString();
 
-            _fakeTweetQueryGenerator.CallsTo(x => x.GetUnFavouriteTweetQuery(tweetDTO)).Returns(query);
+            _fakeTweetQueryGenerator.CallsTo(x => x.GetUnFavoriteTweetQuery(tweetDTO)).Returns(query);
             _fakeTwitterAccessor.ArrangeTryExecutePOSTQuery(query, false);
 
             // Act
-            var result = queryExecutor.UnFavouriteTweet(tweetDTO);
+            var result = queryExecutor.UnFavoriteTweet(tweetDTO);
 
             // Assert
             Assert.IsFalse(result);
@@ -396,11 +408,11 @@ namespace Testinvi.TweetinviControllers.TweetTests
             var tweetId = TestHelper.GenerateRandomLong();
             var query = TestHelper.GenerateString();
 
-            _fakeTweetQueryGenerator.CallsTo(x => x.GetUnFavouriteTweetQuery(tweetId)).Returns(query);
+            _fakeTweetQueryGenerator.CallsTo(x => x.GetUnFavoriteTweetQuery(tweetId)).Returns(query);
             _fakeTwitterAccessor.ArrangeTryExecutePOSTQuery(query, true);
 
             // Act
-            var result = queryExecutor.UnFavouriteTweet(tweetId);
+            var result = queryExecutor.UnFavoriteTweet(tweetId);
 
             // Assert
             Assert.IsTrue(result);
@@ -414,11 +426,11 @@ namespace Testinvi.TweetinviControllers.TweetTests
             var tweetId = TestHelper.GenerateRandomLong();
             var query = TestHelper.GenerateString();
 
-            _fakeTweetQueryGenerator.CallsTo(x => x.GetUnFavouriteTweetQuery(tweetId)).Returns(query);
+            _fakeTweetQueryGenerator.CallsTo(x => x.GetUnFavoriteTweetQuery(tweetId)).Returns(query);
             _fakeTwitterAccessor.ArrangeTryExecutePOSTQuery(query, false);
 
             // Act
-            var result = queryExecutor.UnFavouriteTweet(tweetId);
+            var result = queryExecutor.UnFavoriteTweet(tweetId);
 
             // Assert
             Assert.IsFalse(result);
@@ -471,6 +483,22 @@ namespace Testinvi.TweetinviControllers.TweetTests
         public TweetQueryExecutor CreateTweetQueryExecutor()
         {
             return _fakeBuilder.GenerateClass();
+        }
+
+        private IEnumerable<long> GenerateExpectedCursorResults()
+        {
+            var queryId1 = TestHelper.GenerateRandomLong();
+            var queryId2 = TestHelper.GenerateRandomLong();
+
+            _cursorQueryIds.Add(queryId1);
+            _cursorQueryIds.Add(queryId2);
+
+            return new long[] { queryId1, queryId2 };
+        }
+
+        private IEnumerable<ITweetDTO> GenerateExpectedIRetweetsCursorResults()
+        {
+            return new ITweetDTO[] { A.Fake<ITweetDTO>(), A.Fake<ITweetDTO>() };
         }
     }
 }

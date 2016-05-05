@@ -6,7 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using Tweetinvi.Core;
-using Tweetinvi.Core.Credentials;
+using Tweetinvi.Core.Authentication;
 using Tweetinvi.Core.Enum;
 using Tweetinvi.Core.Extensions;
 using Tweetinvi.Core.Helpers;
@@ -88,7 +88,7 @@ namespace Tweetinvi.WebLogic
 
             for (int i = 0; i < oAuthSecretKeyHeaders.Count(); ++i)
             {
-                oAuthSecretkey += String.Format("{0}{1}",
+                oAuthSecretkey += string.Format("{0}{1}",
                     StringFormater.UrlEncode(oAuthSecretKeyHeaders.ElementAt(i).Value),
                     (i == oAuthSecretKeyHeaders.Count() - 1) ? "" : "&");
             }
@@ -173,17 +173,20 @@ namespace Tweetinvi.WebLogic
             return consumerHeaders;
         }
 
-        public IEnumerable<IOAuthQueryParameter> GenerateApplicationParameters(IConsumerCredentials temporaryCredentials, IEnumerable<IOAuthQueryParameter> additionalParameters = null)
+        public IEnumerable<IOAuthQueryParameter> GenerateApplicationParameters(
+            IConsumerCredentials temporaryCredentials, 
+            IAuthenticationToken authenticationToken = null,
+            IEnumerable<IOAuthQueryParameter> additionalParameters = null)
         {
             var headers = GenerateConsumerParameters(temporaryCredentials).ToList();
 
             // Add Header for authenticated connection to a Twitter Application
-            if (temporaryCredentials != null &&
-                !string.IsNullOrEmpty(temporaryCredentials.AuthorizationKey) &&
-                !string.IsNullOrEmpty(temporaryCredentials.AuthorizationSecret))
+            if (authenticationToken != null &&
+                !string.IsNullOrEmpty(authenticationToken.AuthorizationKey) &&
+                !string.IsNullOrEmpty(authenticationToken.AuthorizationSecret))
             {
-                headers.Add(new OAuthQueryParameter("oauth_token", StringFormater.UrlEncode(temporaryCredentials.AuthorizationKey), true, true, false));
-                headers.Add(new OAuthQueryParameter("oauth_token_secret", StringFormater.UrlEncode(temporaryCredentials.AuthorizationSecret), false, false, true));
+                headers.Add(new OAuthQueryParameter("oauth_token", StringFormater.UrlEncode(authenticationToken.AuthorizationKey), true, true, false));
+                headers.Add(new OAuthQueryParameter("oauth_token_secret", StringFormater.UrlEncode(authenticationToken.AuthorizationSecret), false, false, true));
             }
             else
             {
@@ -233,18 +236,7 @@ namespace Tweetinvi.WebLogic
             Uri uri = new Uri(url);
             var header = GenerateAuthorizationHeader(uri, httpMethod, parameters);
 
-            // This debug is only compiled in debug mode and display the executed queries
-# if DEBUG
-            // ReSharper disable once ConditionIsAlwaysTrueOrFalse
-            if (_tweetinviSettingsAccessor.ShowDebug)
-            // ReSharper disable once CSharpWarnings::CS0162
-            {
-                Debug.WriteLine("{0} : {1}", httpMethod, uri.AbsoluteUri);
-                Debug.WriteLine("Header {0}", header);
-            }
-# endif
-
-            var webRequest = (HttpWebRequest)WebRequest.Create(uri.AbsoluteUri);//WebRequest.CreateHttp(uri.AbsoluteUri);
+            var webRequest = WebRequest.CreateHttp(uri.AbsoluteUri);
             webRequest.Method = httpMethod.ToString();
             webRequest.Headers["Authorization"] = header;
 
