@@ -129,7 +129,7 @@ namespace Tweetinvi
         /// </param>
         public static ITwitterCredentials CreateCredentialsFromVerifierCode(string verifierCode, string authorizationId, IAuthenticationContext authContext = null)
         {
-            var authToken = CreateCrentialsFromId(authorizationId, authContext?.Token);
+            var authToken = CreateCrentialsFromId(authorizationId, CompatibilityHelper.TryGet<IAuthenticationToken>(() => authContext.Token));
             return _authFactory.GetCredentialsFromVerifierCode(verifierCode, authToken);
         }
 
@@ -147,7 +147,7 @@ namespace Tweetinvi
             string verifierCode = _webTokenFactory.GetVerifierCodeFromCallbackURL(callbackURL);
             var credentialsId = callbackURL.GetURLParameter("authorization_id");
 
-            var authToken = CreateCrentialsFromId(credentialsId, authContext?.Token);
+            var authToken = CreateCrentialsFromId(credentialsId, CompatibilityHelper.TryGet<IAuthenticationToken>(() => authContext.Token));
             return CreateCredentialsFromVerifierCode(verifierCode, authToken);
         }
 

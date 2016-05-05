@@ -298,12 +298,12 @@ namespace Tweetinvi.Streams
             if (MatchOn.HasFlag(MatchOn.Everything) ||
                 MatchOn.HasFlag(MatchOn.Follower))
             {
-                var userId = tweet.CreatedBy?.Id;
+                var userId = CompatibilityHelper.TryGet<long>(() => tweet.CreatedBy.Id);
                 Action<ITweet> actionToExecuteWhenMatchingFollower;
 
                 if (userId != null && _followingUserIds.TryGetValue(userId, out actionToExecuteWhenMatchingFollower))
                 {
-                    matchingFollowersAndActions.TryAdd(userId.Value, actionToExecuteWhenMatchingFollower);
+                    matchingFollowersAndActions.TryAdd(userId, actionToExecuteWhenMatchingFollower);
                     matchingTracksEventArgs.MatchOn |= MatchOn.Follower;
                 }
             }

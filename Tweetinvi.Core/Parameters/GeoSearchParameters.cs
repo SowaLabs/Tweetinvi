@@ -84,7 +84,7 @@ namespace Tweetinvi.Core.Parameters
         public int? Accuracy { get; set; }
         public int? MaximumNumberOfResults { get; set; }
         public string ContainedWithin { get; set; }
-        public Dictionary<string, string> Attributes { get; }
+        public Dictionary<string, string> Attributes { get; private set; }
         public string Callback { get; set; }
     }
 }

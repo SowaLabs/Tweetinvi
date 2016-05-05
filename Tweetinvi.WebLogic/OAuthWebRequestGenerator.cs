@@ -236,7 +236,7 @@ namespace Tweetinvi.WebLogic
             Uri uri = new Uri(url);
             var header = GenerateAuthorizationHeader(uri, httpMethod, parameters);
 
-            var webRequest = WebRequest.CreateHttp(uri.AbsoluteUri);
+            var webRequest = (HttpWebRequest)WebRequest.Create(uri.AbsoluteUri);
             webRequest.Method = httpMethod.ToString();
             webRequest.Headers["Authorization"] = header;
 

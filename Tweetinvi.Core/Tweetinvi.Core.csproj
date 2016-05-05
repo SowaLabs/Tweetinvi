@@ -85,6 +85,7 @@
     <Compile Include="Exceptions\TwitterException.cs" />
     <Compile Include="Exceptions\TwitterTimeoutException.cs" />
     <Compile Include="Exceptions\UserStreamFailedToInitialize.cs" />
+    <Compile Include="Helpers\CompatibilityHelper.cs" />
     <Compile Include="Extensions\DictionaryExtensions.cs" />
     <Compile Include="Extensions\ExceptionUtils.cs" />
     <Compile Include="Extensions\IEnumerableExtension.cs" />

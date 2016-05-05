@@ -351,7 +351,7 @@ namespace Tweetinvi.Logic
 
         public string Url
         {
-            get { return string.Format("https://twitter.com/{0}/status/{1}", CreatedBy?.ScreenName, Id.ToString().ToLowerInvariant()); }
+            get { return string.Format("https://twitter.com/{0}/status/{1}", CompatibilityHelper.TryGet<string>(() => CreatedBy.ScreenName), Id.ToString().ToLowerInvariant()); }
         }
 
         private readonly DateTime _tweetLocalCreationDate = DateTime.Now;

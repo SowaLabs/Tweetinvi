@@ -58,8 +58,8 @@ namespace Tweetinvi.Core.Parameters
             IncludeEntities = true;
         }
 
-        public byte[] Binary { get; }
-        public long? MediaId { get; }
+        public byte[] Binary { get; private set; }
+        public long? MediaId { get; private set; }
         public bool? UseTileMode { get; set; }
         public bool IncludeEntities { get; set; }
         public bool SkipStatus { get; set; }
