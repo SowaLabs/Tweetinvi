@@ -26,7 +26,7 @@ namespace Tweetinvi.Factories
 
         public ITwitterQuery Create(string queryURL, HttpMethod httpMethod, bool withThreadCredentials = false)
         {
-            var uri = new Uri(queryURL);
+            var uri = new Uri(queryURL); 
             var queryURLParameter = new ConstructorNamedParameter("queryURL", uri.AbsoluteUri);
             var httpMethodParameter = new ConstructorNamedParameter("httpMethod", httpMethod);
 
